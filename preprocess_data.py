@@ -10,7 +10,7 @@ import pdb
 
 proj_root = os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))
-data_root = os.path.join(proj_root, 'Data')
+data_root = os.path.join('/mnt/e/data/liuyang/', '2024shoufa')
 
 
 def default_loader(path):
