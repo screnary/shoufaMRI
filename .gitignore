@@ -1,4 +1,5 @@
 .DS_Store
 Thumbs.db
 Data/
+__pycache__/
 
