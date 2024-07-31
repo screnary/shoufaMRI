@@ -20,5 +20,5 @@ data_root = os.path.join('/mnt/e/data/liuyang/', '2024shoufa')
 if __name__ == '__main__':
     print("----Start----")
     test_fpath = os.path.join(data_root, '1000814任俊杰/DICOM/PA0/ST0/SE5')
-    imlist = pp.get_1ring_subdirs(test_fpath)
+    imlist = sorted(os.listdir(test_fpath),key=pp.natural_sort_key)
     pdb.set_trace()

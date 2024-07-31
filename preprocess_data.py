@@ -1,4 +1,5 @@
 import os
+import re
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -120,6 +121,11 @@ class VolumeDataset:
             volume_tmp = self.load_volume(idx)
             volume['data'][..., i] = volume_tmp['data'][..., i]
         return volume
+
+
+def natural_sort_key(s):
+    # usage: sorted(files, key=natural_sort_key)
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', s)]
 
 
 def get_1ring_subdirs(root_dir=None):
