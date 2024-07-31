@@ -26,7 +26,7 @@ def default_loader(path):
 
 
 class Volume:
-    def __init__(self, img_list, name_list, vid, save_dir):
+    def __init__(self, img_list, name_list, vid, save_dir, norm='volume'):
         """
         construct volume instance
         :param img_list: slice data list, list of ndarray
@@ -39,15 +39,18 @@ class Volume:
         self.save_dir = save_dir
         # self.vdata = self.normalize(np.asarray(img_list))
         self.name_slices = name_list  # slice name list
-        self.vdata = self.normalize(mode="volume").astype('float32')
+        self.vdata = self.normalize(mode=norm).astype('float32')
 
     def normalize(self, mode="volume"):
         """
         normalize the volume slices
         :param imarray:
-        :param mode: ['volume', 'slice'], norm across volume or per slice
+        :param mode: ['volume', 'slice', 'none'], norm across volume or per slice
         :return:
         """
+        if mode == 'none':
+            # do not normalize while create new dicom file
+            return self._vdata
         min_v = np.min(self._vdata.reshape(self._vsize[0], -1), axis=1)
         max_v = np.max(self._vdata.reshape(self._vsize[0], -1), axis=1)
         if mode == "volume":
