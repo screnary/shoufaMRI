@@ -68,7 +68,8 @@ def parseDicomFile(file_path):
 
 if __name__ == '__main__':
     print("----Start----")
-    test_fpath = os.path.join(data_root, '1000814任俊杰/DICOM/PA0/ST0/SE5')
+    args = argument_parser()
+    test_fpath = os.path.join(args.data_root, '1000814任俊杰/DICOM/PA0/ST0/SE5')
     imlist = sorted(os.listdir(test_fpath),key=pp.natural_sort_key)
     
     fn = os.path.join(test_fpath, imlist[0])
