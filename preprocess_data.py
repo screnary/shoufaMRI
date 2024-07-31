@@ -125,7 +125,7 @@ class VolumeDataset:
 
 def natural_sort_key(s):
     # usage: sorted(files, key=natural_sort_key)
-    return [int(c) if c.isdigit() else continue for c in re.split(r'(\d+)', s)]
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', s)]
 
 
 def get_1ring_subdirs(root_dir=None):
