@@ -44,7 +44,7 @@ def read_dicom_metadata(dataset):
                 print(f"    Item {i}:")
                 for subelem in item:
                     print(f"      {subelem.tag}: {subelem.name} = {subelem.value}")
-            pdb.set_trace()
+                # pdb.set_trace()
         else:
             # 对于像素数据，只打印标签和名称，不打印值（因为可能非常大）
             if elem.tag == (0x7fe0, 0x0010):  # Pixel Data
@@ -61,7 +61,7 @@ def parseDicomFile(file_path):
     dataset = pydicom.dcmread(file_path)
     # read common meta data
     read_dicom_metadata(dataset)
-    pdb.set_trace()
+    # pdb.set_trace()
     # read unique meta data
     
     # read slice pixel data (matrix)
