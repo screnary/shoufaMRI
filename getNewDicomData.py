@@ -6,8 +6,10 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import pydicom
+from pydicom.dataset import Dataset, FileDataset
 from tqdm import tqdm
 import preprocess_data as pp
+from datetime import datetime
 import pdb
 
 
@@ -65,6 +67,52 @@ def parseDicomFile(file_path):
     # read unique meta data
     
     # read slice pixel data (matrix)
+
+
+def update_dicom(input_file, output_file, updates):
+    # 读取原始DICOM文件
+    original_dcm = pydicom.dcmread(input_file)
+
+    # 创建一个新的 FileDataset 对象，复制原始数据集
+    new_dcm = FileDataset(output_file, {}, file_meta=original_dcm.file_meta, preamble=original_dcm.preamble)
+
+    # 复制所有原始元素到新数据集
+    for elem in original_dcm:
+        new_dcm.add(elem)
+
+    # 更新指定的元数据
+    for key, value in updates.items():
+        if hasattr(new_dcm, key):
+            setattr(new_dcm, key, value)
+        else:
+            print(f"警告: {key} 不是有效的DICOM元素。")
+
+    # 更新 SOP Instance UID，因为这是一个新的实例
+    new_dcm.SOPInstanceUID = pydicom.uid.generate_uid()
+
+    # 设置当前日期和时间
+    dt = datetime.now()
+    new_dcm.ContentDate = dt.strftime('%Y%m%d')
+    new_dcm.ContentTime = dt.strftime('%H%M%S.%f')
+
+    # 保存新的DICOM文件
+    new_dcm.save_as(output_file)
+
+    print(f"更新后的DICOM文件已保存为: {output_file}")
+
+''' # 使用示例
+input_file = "path/to/your/input.dcm"
+output_file = "path/to/your/output.dcm"
+
+# 指定要更新的元数据
+updates = {
+    'PatientName': 'SMITH^JOHN',
+    'PatientID': '12345',
+    'StudyDescription': 'Updated Study',
+    'SeriesDescription': 'Updated Series'
+} '''
+
+update_dicom(input_file, output_file, updates)
     
 
 if __name__ == '__main__':
