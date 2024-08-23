@@ -112,14 +112,118 @@ updates = {
     'SeriesDescription': 'Updated Series'
 } '''
 
-update_dicom(input_file, output_file, updates)
-    
+# update_dicom(input_file, output_file, updates)
+
+def getVidIdx(volume_size=40, total_num=12000):
+    def getBaseIdx(volume_size=40):
+        # prepare imlist file (.npz file, numpy list [[0,39,1,38,2,37,...],[],[],...])
+        # output: 0,39,1,38,2,37,...;
+        idx = list(range(0,40,1))
+        idx_inv = idx[::-1]
+        idx_base = []
+        for i in range(volume_size//2):
+            idx_base.append(idx[i])
+            idx_base.append(idx_inv[i])
+        return np.asarray(idx_base)
+
+    idx_base = getBaseIdx(volume_size)
+    vid_list = [] # volume id list
+
+    for i in range(total_num//volume_size):
+        vid_list.append( idx_base + volume_size * i )
+    return np.asarray(vid_list)
+
 
 if __name__ == '__main__':
+
     print("----Start----")
-    args = argument_parser()
-    test_fpath = os.path.join(args.data_root, '1000814任俊杰/DICOM/PA0/ST0/SE5')
-    imlist = sorted(os.listdir(test_fpath),key=pp.natural_sort_key)
+    # args = argument_parser()
+    # test_fpath = os.path.join(args.data_root, '1000814任俊杰/DICOM/PA0/ST0/SE5')
+    # imlist = sorted(os.listdir(test_fpath),key=pp.natural_sort_key)
     
-    fn = os.path.join(test_fpath, imlist[0])
-    parseDicomFile(fn)
+    # fn = os.path.join(test_fpath, imlist[0])
+    # parseDicomFile(fn)
+    
+    # Step1. 处理样例数据，按文件序列组织为 Volume instance 并查看数据正确性，中间数据存储
+    # S1.1 将volume与文件的序列关系存储为二维数组
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    config_fpath = os.path.join(root_dir, 'Data', 'volume_idx_mapping.npy')
+    if os.path.isfile(config_fpath):
+        vid_list = np.load(config_fpath)
+        print("config file loaded")
+    else:
+        print("config file not found, create now...")
+        vid_list = getVidIdx(volume_size=40, total_num=12000) # get index of stack of volumes [volume1[s1,s2,...],volume2,...]
+        np.save(config_fpath, vid_list)
+    
+    # S1.2 将Dicom数据处理为 volume 数据结构; ? 写完该部分函数，将它移到 preprocess_data 中
+    imfolder = os.path.join(root_dir, 'Data', 'SE4')
+    def cvDicom2Volume(imfolder=imfolder, vid_list=vid_list):
+        # read DICOM files--BOLD files, and process them to Volume data structure
+        # setup dirs, can be read from config inputs
+        # print("******************\n\tProcessing {} {}\n******************".format(args.group, args.time_stamp))
+        
+        # get all IM files, to a fname list
+        im_list = sorted(os.listdir(imfolder),key=pp.natural_sort_key)
+        slice_list = [im_list[im_id] for im_id in vid_list[0]]
+
+        volume = pp.getVolume(slice_list, imfolder, save_path=os.path.join(root_dir, 'Data', 'SE4_test'), v_id=0)
+        volume.save2img()
+        print('img saved')
+
+    cvDicom2Volume()
+        
+        # instance_path_list = sorted(get_1ring_subdirs(group_root))
+        # for (i, instance_path) in enumerate(instance_path_list):
+        #     instance_name = instance_path.split('/')[-1]
+        #     dicom_phase_list = sorted(get_1ring_subdirs(instance_path))
+        #     dicom_slice_path = dicom_phase_list[1]
+        #     dicom_slice_suffix = dicom_slice_path.split('__')[-1]
+        #     dicom_bold_path = dicom_phase_list[-1]
+        #     dicom_bold_suffix = dicom_bold_path.split('__')[-1]
+        #     slice_file = [f for f in sorted(os.listdir(dicom_slice_path))
+        #                 if not f.startswith(".")]
+        #     bold_file = [f for f in sorted(os.listdir(dicom_bold_path))
+        #                 if f.startswith("MRI")]
+        #     if not (len(slice_file) == args.slice_num and len(bold_file) == args.bold_num):
+        #         print("dicom file num NOT VALID", len(slice_file), len(bold_file))
+        #         pdb.set_trace()
+
+        #     print("Processing instance {}, [{}/{}]...".format(instance_path.split('/')[-1], i+1, len(instance_path_list)))
+
+        #     print("Processing Slices High Resolution...")
+        #     save_path = os.path.join(args.save_path, instance_name, 'pose_fix-' + dicom_slice_suffix)
+        #     fns = slice_file
+        #     volume = getVolume(fns, dicom_slice_path, save_path, v_id=0)
+        #     volume.save2img()
+
+        #     if not os.path.exists(save_path):
+        #         os.makedirs(save_path)
+        #     with open(os.path.join(save_path, 'volume.npz'), 'wb') as f:
+        #         vdata = (volume.vdata * 255).astype('uint8')
+        #         np.savez(f, vdata)
+
+            # print("Processing volumes...")
+            # s_num = args.slice_num
+            # v_num = args.bold_num // args.slice_num
+            # save_path = os.path.join(args.save_path, instance_name, 'bold-' + dicom_bold_suffix)
+            # for j in tqdm(range(v_num)):
+            #     st, ed = j * s_num, (j + 1) * s_num
+            #     fns = bold_file[st:ed]
+            #     try:
+            #         volume = getVolume(fns, dicom_bold_path, save_path, v_id=j+1)
+            #         volume.save2img()
+            #         if not os.path.exists(save_path):
+            #             os.makedirs(save_path)
+            #         with open(os.path.join(save_path, 'volume_{:05d}.npz'.format(j+1)), 'wb') as f:
+            #             vdata = (volume.vdata * 255).astype('uint8')
+            #             np.savez(f, vdata)
+            #     except Exception as e:
+            #         print("Error: ", e)
+            #         print("An Error Occurred while processing volume_{}".format(j+1))
+    # Step2. 将 volume structure 解析存储为 Dicom IM 数据
+    
+    
+    pdb.set_trace()
+            
+    
