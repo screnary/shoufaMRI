@@ -172,6 +172,8 @@ if __name__ == '__main__':
         print('img saved')
 
     cvDicom2Volume()
+    
+    # S1.3 查看slice数据的关键meta data并保存备用, 构建新的Dicom数据时使用
         
         # instance_path_list = sorted(get_1ring_subdirs(group_root))
         # for (i, instance_path) in enumerate(instance_path_list):

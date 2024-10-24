@@ -185,7 +185,7 @@ def getVolume(fns, dicom_path, save_path, v_id=0):
     sname_list = []
     for slice_f in fns:
         ds = pydicom.dcmread(os.path.join(dicom_path, slice_f), force=True)
-        slice_data = ds.pixel_array
+        slice_data = ds.pixel_array  # dtype=int16
         sdata_list.append(slice_data)
         sname_list.append(slice_f)
     volume = Volume(sdata_list, sname_list, v_id, save_path)
