@@ -152,6 +152,7 @@ def dcm2nii_sitk(path_read, path_save):
         path_read (str): dicom file path
         path_save (_type_): _description_
     """
+    import SimpleITK as sitk
     reader = sitk.ImageSeriesReader()
     seriesIDs = reader.GetGDCMSeriesIDs(path_read)
     # pdb.set_trace()
