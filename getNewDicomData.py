@@ -3,6 +3,7 @@
 """
 import os
 import numpy as np
+from collections import defaultdict
 import cv2
 import matplotlib.pyplot as plt
 import pydicom
@@ -10,6 +11,7 @@ from pydicom.dataset import Dataset, FileDataset
 from tqdm import tqdm
 import preprocess_data as pp
 from datetime import datetime
+
 import nibabel as nib
 import pdb
 
@@ -136,7 +138,7 @@ def getVidIdx(volume_size=40, total_num=12000):
 
 # 创建新的NIfTI文件
 def create_nifti(data, affine=None, header=None):
-    """创建新的NIfTI文件"""
+    """创建新的NIfTI文件, 适用于Nifti1"""
     if affine is None:
         affine = np.eye(4)
     
@@ -154,7 +156,28 @@ def check_nifti_version(img):
         return "NIfTI-2"
     else:
         return "Unknown"
+    
+# 检查header元数据
+def check_nifti_header(img):
+    header = img.header
+    for k in header:
+        print(f"header {k}: {header[k]}")
 
+def update_header_info(img, updates):
+    """更新头文件信息"""
+    header = img.header.copy()
+    for key, value in updates.items():
+        header[key] = value
+    return nib.Nifti1Image(img.get_fdata(), img.affine, header)
+
+def check_and_create(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        return f"Created: {path}"
+    elif not os.path.isdir(path):
+        return f"Error: {path} exists but is not a directory"
+    else:
+        return f"Already exists: {path}"
 
 if __name__ == '__main__':
 
@@ -176,23 +199,40 @@ if __name__ == '__main__':
     list_subj_name = [os.path.basename(path) for path in list_subj_path]
     list_subj_name = sorted(list_subj_name, key=pp.natural_sort_key)
     
-    def get_subj_nii_pairs(fpath):
+    def split_ori_to_new_files(fpath, ratio=2):
         """ from subject path get .nii file, save to a dict """
         subj = os.path.basename(fpath)
-        niif = os.listdir(fpath)
-        assert len(niif) ==1 and niif[0].endswith('.nii'), "subject {} has multiple files, or file is not .nii".format(subj)
-        print(subj, niif)
-        nii_img = nib.load(os.path.join(fpath,niif[0]))
-        # check nifti version
-        check_nifti_version(nii_img)
-        # read nii data, header, affine matrix
+        niifs = os.listdir(fpath)
+        assert len(niifs) ==1 and niifs[0].endswith('.nii'), "subject {} has multiple files, or file is not .nii".format(subj)
+        print('Processing: ', subj, niifs[0])
+        niif = niifs[0]
+        nii_img = nib.load(os.path.join(fpath,niif))
+
         data = nii_img.get_fdata()
         header = nii_img.header
         affine = nii_img.affine
-        print("data shape: {}".format(data.shape))
-        print("data dtype: {}".format(data.dtype))
-        print("header voxel size: {}".format(header.get_zooms()))
-        pdb.set_trace()
-        
 
-    get_subj_nii_pairs(list_subj_path[2])
+        st = 0
+        step = data.shape[3]//ratio # time dim, split to two parts
+        data_1 = data[:,:,:,:st+step]
+        data_2 = data[:,:,:,st+step:]
+        img_1 = create_nifti(data_1, affine=affine, header=header)
+        img_2 = create_nifti(data_2, affine=affine, header=header)
+
+        updates = {'dim': np.array([4,64,64,40,header['dim'][4]//ratio,1,1,1],dtype='int16')}
+        update_header_info(img_1, updates)
+        update_header_info(img_2, updates)
+        
+        # save new nii files
+        save_path_1 = os.path.join(root_dir, 'Data', 'CFH_expand', 'Post_Surgery', 'Post_Surgery_BOLD', subj+'_01')
+        save_path_2 = os.path.join(root_dir, 'Data', 'CFH_expand', 'Post_Surgery', 'Post_Surgery_BOLD', subj+'_02')
+        check_and_create(save_path_1)
+        check_and_create(save_path_2)
+        fname_1 = os.path.join(save_path_1, niif.split('.')[0]+'_01'+'.nii')
+        fname_2 = os.path.join(save_path_2, niif.split('.')[0]+'_02'+'.nii')
+        nib.save(img_1, fname_1)
+        nib.save(img_2, fname_2)
+
+    for subj_path in list_subj_path:
+        split_ori_to_new_files(subj_path)
+        print('*********** finished ************')
