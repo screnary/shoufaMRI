@@ -11,6 +11,7 @@ from pydicom.dataset import Dataset, FileDataset
 from tqdm import tqdm
 import preprocess_data as pp
 from datetime import datetime
+import shutil
 
 import nibabel as nib
 import pdb
@@ -24,9 +25,15 @@ def argument_parser():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_root', type=str,
-                        default="/mnt/e/data/liuyang/2024shoufa",
+                        default="/mnt/e/data/liuyang/",
                         help='data root for this project')
-    
+    parser.add_argument('--surg_time', type=str,
+                        default="Post_Surgery", choices=['Post_Surgery','Pre_Surgery']
+                        )
+    parser.add_argument('--data_phase', type=str,
+                        default="Rest", choices=['Rest','Struc']
+                        )
+
     args = parser.parse_args()
     return args
 
@@ -179,60 +186,67 @@ def check_and_create(path):
     else:
         return f"Already exists: {path}"
 
+def split_ori_to_new_files(fpath, ratio=2, args=args):
+    """ from subject path get .nii file, save to a dict 
+    input:
+        fpath: str, subject_0001's path (dir)
+        ratio: int, split into N files, N=num_subs/ratio
+    """
+    subj = os.path.basename(fpath)
+    niifs = os.listdir(fpath)
+    assert len(niifs) ==1 and niifs[0].endswith('.nii'), "subject {} has multiple files, or file is not .nii".format(subj)
+    print('Processing: ', subj, niifs[0])
+    niif = niifs[0]
+    nii_img = nib.load(os.path.join(fpath,niif))
+
+    data = nii_img.get_fdata()
+    header = nii_img.header
+    affine = nii_img.affine
+
+    st = 0
+    step = data.shape[3]//ratio # time dim, split to two parts
+    data_1 = data[:,:,:,:st+step] #TODO: wrap this with for block
+    data_2 = data[:,:,:,st+step:]
+    img_1 = create_nifti(data_1, affine=affine, header=header)
+    img_2 = create_nifti(data_2, affine=affine, header=header)
+
+    updates = {'dim': np.array([4,64,64,40,header['dim'][4]//ratio,1,1,1],dtype='int16')}
+    update_header_info(img_1, updates)
+    update_header_info(img_2, updates)
+    
+    # save new nii files
+    save_path_1 = os.path.join(args.data_root,'CFH_expand', args.surg_time+'_01', 'Rest', subj+'_01')
+    save_path_2 = os.path.join(args.data_root,'CFH_expand', args.surg_time+'_02', 'Rest', subj+'_02')
+    check_and_create(save_path_1)
+    check_and_create(save_path_2)
+    fname_1 = os.path.join(save_path_1, niif.split('.')[0]+'.nii')
+    fname_2 = os.path.join(save_path_2, niif.split('.')[0]+'.nii')
+    nib.save(img_1, fname_1)
+    nib.save(img_2, fname_2)
+
 if __name__ == '__main__':
+    args = argument_parser()
 
     print("----Start----")
-    # args = argument_parser()
-    # test_fpath = os.path.join(args.data_root, '1000814任俊杰/DICOM/PA0/ST0/SE5')
-    # imlist = sorted(os.listdir(test_fpath),key=pp.natural_sort_key)
+    # script: process all data in remote PC
     
-    # fn = os.path.join(test_fpath, imlist[0])
-    # parseDicomFile(fn)
-    
-    # Step1. 处理样例数据，按文件序列组织为 Volume instance 并查看数据正确性，中间数据存储
-    # S1.1 将volume与文件的序列关系存储为二维数组
-    root_dir = os.path.dirname(os.path.abspath(__file__))
-    cfh_origin_path = os.path.join(root_dir, 'Data', 'CFH_origin')
-    BOLD_path = os.path.join(cfh_origin_path, 'Post_Surgery', 'Post_Surgery_BOLD')
-    list_subj_path = pp.get_1ring_subdirs(BOLD_path)
-    list_subj_path = sorted(list_subj_path, key=pp.natural_sort_key)
-    list_subj_name = [os.path.basename(path) for path in list_subj_path]
-    list_subj_name = sorted(list_subj_name, key=pp.natural_sort_key)
-    
-    def split_ori_to_new_files(fpath, ratio=2):
-        """ from subject path get .nii file, save to a dict """
-        subj = os.path.basename(fpath)
-        niifs = os.listdir(fpath)
-        assert len(niifs) ==1 and niifs[0].endswith('.nii'), "subject {} has multiple files, or file is not .nii".format(subj)
-        print('Processing: ', subj, niifs[0])
-        niif = niifs[0]
-        nii_img = nib.load(os.path.join(fpath,niif))
+    ori_bold_path = os.path.join(args.data_root, 'CFH_origin', args.surg_time, args.surg_time+'_BOLD')
+    ori_t1_path = os.path.join(args.data_root, 'CFH_origin', args.surg_time, args.surg_time+'_T1')
 
-        data = nii_img.get_fdata()
-        header = nii_img.header
-        affine = nii_img.affine
+    if args.data_phase == 'Rest':
+        # process BOLD data, split 1 into 2 files
+        list_subj_path = pp.get_1ring_subdirs(BOLD_path)
+        list_subj_path = sorted(list_subj_path, key=pp.natural_sort_key)
 
-        st = 0
-        step = data.shape[3]//ratio # time dim, split to two parts
-        data_1 = data[:,:,:,:st+step]
-        data_2 = data[:,:,:,st+step:]
-        img_1 = create_nifti(data_1, affine=affine, header=header)
-        img_2 = create_nifti(data_2, affine=affine, header=header)
-
-        updates = {'dim': np.array([4,64,64,40,header['dim'][4]//ratio,1,1,1],dtype='int16')}
-        update_header_info(img_1, updates)
-        update_header_info(img_2, updates)
-        
-        # save new nii files
-        save_path_1 = os.path.join(root_dir, 'Data', 'CFH_expand', 'Post_Surgery', 'Post_Surgery_BOLD', subj+'_01')
-        save_path_2 = os.path.join(root_dir, 'Data', 'CFH_expand', 'Post_Surgery', 'Post_Surgery_BOLD', subj+'_02')
-        check_and_create(save_path_1)
-        check_and_create(save_path_2)
-        fname_1 = os.path.join(save_path_1, niif.split('.')[0]+'_01'+'.nii')
-        fname_2 = os.path.join(save_path_2, niif.split('.')[0]+'_02'+'.nii')
-        nib.save(img_1, fname_1)
-        nib.save(img_2, fname_2)
-
-    for subj_path in list_subj_path:
-        split_ori_to_new_files(subj_path)
-        print('*********** finished ************')
+        for subj_path in list_subj_path:
+            split_ori_to_new_files(subj_path, ratio=2, args=args)
+        print('finished split bold files')
+    elif args.data_phase == 'Struc':
+        # precess T1 data, copy into folder
+        tar_01_path = os.path.join(args.data_root, 'CFH_expand', args.surg_time+'_01', 'Struc')
+        tar_02_path = os.path.join(args.data_root, 'CFH_expand', args.surg_time+'_02', 'Struc')
+        shtil.copytree(ori_t1_path, tar_01_path)
+        shtil.copytree(ori_t1_path, tar_02_path)
+        print('finished copy T1 files')
+    else:
+        raise NotImplementedError("data phase shold be in [Rest, Struct]")

@@ -97,6 +97,76 @@ if __name__ == '__main__':
     pdb.set_trace()   
 ```
 
+CFH_origin 分割为两半，在mac上少量数据进行测试
+```python
+if __name__ == '__main__':
+
+    print("----Start----")
+    # args = argument_parser()
+    # test_fpath = os.path.join(args.data_root, '1000814任俊杰/DICOM/PA0/ST0/SE5')
+    # imlist = sorted(os.listdir(test_fpath),key=pp.natural_sort_key)
+    
+    # fn = os.path.join(test_fpath, imlist[0])
+    # parseDicomFile(fn)
+    
+    # Step1. 处理样例数据，按文件序列组织为 Volume instance 并查看数据正确性，中间数据存储
+    # S1.1 将volume与文件的序列关系存储为二维数组
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    cfh_origin_path = os.path.join(root_dir, 'Data', 'CFH_origin')
+    BOLD_path = os.path.join(cfh_origin_path, 'Post_Surgery', 'Post_Surgery_BOLD')
+    list_subj_path = pp.get_1ring_subdirs(BOLD_path)
+    list_subj_path = sorted(list_subj_path, key=pp.natural_sort_key)
+    list_subj_name = [os.path.basename(path) for path in list_subj_path]
+    list_subj_name = sorted(list_subj_name, key=pp.natural_sort_key)
+    
+    def split_ori_to_new_files(fpath, ratio=2):
+        """ from subject path get .nii file, save to a dict """
+        subj = os.path.basename(fpath)
+        niifs = os.listdir(fpath)
+        assert len(niifs) ==1 and niifs[0].endswith('.nii'), "subject {} has multiple files, or file is not .nii".format(subj)
+        print('Processing: ', subj, niifs[0])
+        niif = niifs[0]
+        nii_img = nib.load(os.path.join(fpath,niif))
+
+        data = nii_img.get_fdata()
+        header = nii_img.header
+        affine = nii_img.affine
+
+        st = 0
+        step = data.shape[3]//ratio # time dim, split to two parts
+        data_1 = data[:,:,:,:st+step]
+        data_2 = data[:,:,:,st+step:]
+        img_1 = create_nifti(data_1, affine=affine, header=header)
+        img_2 = create_nifti(data_2, affine=affine, header=header)
+
+        updates = {'dim': np.array([4,64,64,40,header['dim'][4]//ratio,1,1,1],dtype='int16')}
+        update_header_info(img_1, updates)
+        update_header_info(img_2, updates)
+        
+        # save new nii files
+        save_path_1 = os.path.join(root_dir, 'Data', 'CFH_expand', 'Post_Surgery', 'Post_Surgery_BOLD', subj+'_01')
+        save_path_2 = os.path.join(root_dir, 'Data', 'CFH_expand', 'Post_Surgery', 'Post_Surgery_BOLD', subj+'_02')
+        check_and_create(save_path_1)
+        check_and_create(save_path_2)
+        fname_1 = os.path.join(save_path_1, niif.split('.')[0]+'_01'+'.nii')
+        fname_2 = os.path.join(save_path_2, niif.split('.')[0]+'_02'+'.nii')
+        nib.save(img_1, fname_1)
+        nib.save(img_2, fname_2)
+
+    for subj_path in list_subj_path:
+        split_ori_to_new_files(subj_path)
+        print('*********** finished ************')
+```
+
+在家里PC上，全量数据处理，CFH_origin to CFH_expand
+要求是：1）_001和_002分开文件夹放，分别建立一个以_001和_002为内容的文件夹；2）在这两个文件夹里都放入T1内容(直接复制进去即可) 3）nii数据命名无要求，故沿用原名
+CFH_expand/Post_Surgery_001/Rest/sub_0001_01/*.nii
+CFH_expand/Post_Surgery_001/Struc/sub_0001_01/*.nii
+CFH_expand/Post_Surgery_002/Rest/sub_0001_02/*.nii
+CFH_expand/Post_Surgery_002/Struc/sub_0001_02/*.nii
+```python
+
+```
 
 ## POE nifti
 NIfTI (Neuroimaging Informatics Technology Initiative) 数据格式是神经影像领域常用的文件格式。以下是其主要特征和结构：
