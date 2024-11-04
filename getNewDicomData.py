@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     if args.data_phase == 'Rest':
         # process BOLD data, split 1 into 2 files
-        list_subj_path = pp.get_1ring_subdirs(BOLD_path)
+        list_subj_path = pp.get_1ring_subdirs(ori_bold_path)
         list_subj_path = sorted(list_subj_path, key=pp.natural_sort_key)
 
         for subj_path in list_subj_path:
