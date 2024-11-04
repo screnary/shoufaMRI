@@ -194,35 +194,37 @@ def split_ori_to_new_files(fpath, ratio, args):
     """
     subj = os.path.basename(fpath)
     niifs = os.listdir(fpath)
-    assert len(niifs) ==1 and niifs[0].endswith('.nii'), "subject {} has multiple files, or file is not .nii".format(subj)
-    print('Processing: ', subj, niifs[0])
-    niif = niifs[0]
-    nii_img = nib.load(os.path.join(fpath,niif))
+    if len(niifs) !=1 or not niifs[0].endswith('.nii'):
+        print("WARNING!!!   subject {} has multiple files, or file is not .nii".format(subj))
+    else:
+        print('Processing: ', subj, niifs[0])
+        niif = niifs[0]
+        nii_img = nib.load(os.path.join(fpath,niif))
 
-    data = nii_img.get_fdata()
-    header = nii_img.header
-    affine = nii_img.affine
+        data = nii_img.get_fdata()
+        header = nii_img.header
+        affine = nii_img.affine
 
-    st = 0
-    step = data.shape[3]//ratio # time dim, split to two parts
-    data_1 = data[:,:,:,:st+step] #TODO: wrap this with for block
-    data_2 = data[:,:,:,st+step:]
-    img_1 = create_nifti(data_1, affine=affine, header=header)
-    img_2 = create_nifti(data_2, affine=affine, header=header)
+        st = 0
+        step = data.shape[3]//ratio # time dim, split to two parts
+        data_1 = data[:,:,:,:st+step] #TODO: wrap this with for block
+        data_2 = data[:,:,:,st+step:]
+        img_1 = create_nifti(data_1, affine=affine, header=header)
+        img_2 = create_nifti(data_2, affine=affine, header=header)
 
-    updates = {'dim': np.array([4,64,64,40,header['dim'][4]//ratio,1,1,1],dtype='int16')}
-    update_header_info(img_1, updates)
-    update_header_info(img_2, updates)
-    
-    # save new nii files
-    save_path_1 = os.path.join(args.data_root,'CFH_expand', args.surg_time+'_01', 'Rest', subj+'_01')
-    save_path_2 = os.path.join(args.data_root,'CFH_expand', args.surg_time+'_02', 'Rest', subj+'_02')
-    check_and_create(save_path_1)
-    check_and_create(save_path_2)
-    fname_1 = os.path.join(save_path_1, niif.split('.')[0]+'.nii')
-    fname_2 = os.path.join(save_path_2, niif.split('.')[0]+'.nii')
-    nib.save(img_1, fname_1)
-    nib.save(img_2, fname_2)
+        updates = {'dim': np.array([4,64,64,40,header['dim'][4]//ratio,1,1,1],dtype='int16')}
+        update_header_info(img_1, updates)
+        update_header_info(img_2, updates)
+        
+        # save new nii files
+        save_path_1 = os.path.join(args.data_root,'CFH_expand', args.surg_time+'_01', 'Rest', subj+'_01')
+        save_path_2 = os.path.join(args.data_root,'CFH_expand', args.surg_time+'_02', 'Rest', subj+'_02')
+        check_and_create(save_path_1)
+        check_and_create(save_path_2)
+        fname_1 = os.path.join(save_path_1, niif.split('.')[0]+'.nii')
+        fname_2 = os.path.join(save_path_2, niif.split('.')[0]+'.nii')
+        nib.save(img_1, fname_1)
+        nib.save(img_2, fname_2)
 
 if __name__ == '__main__':
     args = argument_parser()
