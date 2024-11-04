@@ -193,9 +193,10 @@ def split_ori_to_new_files(fpath, ratio, args):
         ratio: int, split into N files, N=num_subs/ratio
     """
     subj = os.path.basename(fpath)
-    niifs = os.listdir(fpath)
-    if len(niifs) !=1 or not niifs[0].endswith('.nii'):
-        print("WARNING!!!   subject {} has multiple files, or file is not .nii".format(subj))
+    niifs = [f for f in os.listdir(fpath) if f.endswith('.nii')]
+
+    if len(niifs) !=1:
+        print("WARNING!!!   subject {} has not just 1 nii file".format(subj))
     else:
         print('Processing: ', subj, niifs[0])
         niif = niifs[0]
@@ -247,8 +248,8 @@ if __name__ == '__main__':
         # precess T1 data, copy into folder
         tar_01_path = os.path.join(args.data_root, 'CFH_expand', args.surg_time+'_01', 'Struc')
         tar_02_path = os.path.join(args.data_root, 'CFH_expand', args.surg_time+'_02', 'Struc')
-        shtil.copytree(ori_t1_path, tar_01_path)
-        shtil.copytree(ori_t1_path, tar_02_path)
+        shutil.copytree(ori_t1_path, tar_01_path)
+        shutil.copytree(ori_t1_path, tar_02_path)
         print('finished copy T1 files')
     else:
         raise NotImplementedError("data phase shold be in [Rest, Struct]")
