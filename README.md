@@ -164,7 +164,9 @@ CFH_expand/Post_Surgery_001/Rest/sub_0001_01/*.nii
 CFH_expand/Post_Surgery_001/Struc/sub_0001_01/*.nii
 CFH_expand/Post_Surgery_002/Rest/sub_0001_02/*.nii
 CFH_expand/Post_Surgery_002/Struc/sub_0001_02/*.nii
-```python
+```shell
+# Post_Surgery, Rest
+WARNING!!! sub_0019, sub_0020 has no file
 
 ```
 
