@@ -186,7 +186,7 @@ def check_and_create(path):
     else:
         return f"Already exists: {path}"
 
-def split_ori_to_new_files(fpath, ratio=2, args=args):
+def split_ori_to_new_files(fpath, ratio, args):
     """ from subject path get .nii file, save to a dict 
     input:
         fpath: str, subject_0001's path (dir)
