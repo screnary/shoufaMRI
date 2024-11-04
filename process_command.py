@@ -3,7 +3,7 @@ import os
 
 
 LIST_CMD = [
-    "python getNewDicomData.py --data_phase Rest --surg_time Pre_Surgery | tee log_pre_rest.txt",
+    "python getNewDicomData.py --data_phase Rest --surg_time Pre_Surgery > >(tee log_pre_rest.txt)",
     "python getNewDicomData.py --data_phase Struc --surg_time Post_Surgery",
     "python getNewDicomData.py --data_phase Struc --surg_time Pre_Surgery"
 ]

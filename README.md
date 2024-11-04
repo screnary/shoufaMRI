@@ -168,6 +168,8 @@ CFH_expand/Post_Surgery_002/Struc/sub_0001_02/*.nii
 # Post_Surgery, Rest
 WARNING!!! sub_0019, sub_0021 has no file
 
+# Pre_Surgery, Rest
+WARNING!!! sub_0004, sub_0027, sub_0028, sub_0033~0037 has no file
 ```
 
 ## POE nifti
