@@ -296,7 +296,7 @@ if __name__ == '__main__':
     # script: process all data in remote PC
     
     # main_for_split_ori_to_new_files()
-    args.data_root = '/mnt/c/Works/ws/shoufa2025/data'
+    args.data_root = '/mnt/c/Works/ws/shoufa2025/data/Rest'
     ori_bold_path = os.path.join(args.data_root)
 
     if args.data_phase == 'Rest':
