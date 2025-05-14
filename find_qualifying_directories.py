@@ -2,7 +2,7 @@ import os
 import re
 import argparse
 import glob
-
+import pdb
 
 def extract_subject_number(path):
     """
@@ -16,7 +16,7 @@ def extract_subject_number(path):
         int: 提取的数字，如果没有找到则返回float('inf')作为排序的默认值
     """
     # 使用正则表达式查找sub_后跟随的数字部分
-    match = re.search(r'sub_(\d+)', os.path.basename(os.path.dirname(os.path.dirname(path))))
+    match = re.search(r'sub_(\d+)_', path)
     if match:
         # 将提取的数字字符串转换为整数
         return int(match.group(1))
@@ -74,7 +74,7 @@ def find_qualifying_directories(root_dir):
         
         if dcm_count == 12000:
             qualifying_dirs.append(os.path.abspath(dirpath))
-            print(f"找到符合条件的目录: {os.path.abspath(dirpath)}")
+#  print(f"找到符合条件的目录: {os.path.abspath(dirpath)}")
     
     return sorted(qualifying_dirs, key=extract_subject_number)
 
