@@ -1,6 +1,29 @@
 import os
+import re
 import argparse
 import glob
+
+
+def extract_subject_number(path):
+    """
+    从路径中提取sub_XXXX格式的数字部分
+    例如从'/mnt/f/CFH_Original_Data/sub_0053_1040368_wu_yong_liang/...'提取出53
+    
+    Args:
+        path: 包含子目录的路径
+    
+    Returns:
+        int: 提取的数字，如果没有找到则返回float('inf')作为排序的默认值
+    """
+    # 使用正则表达式查找sub_后跟随的数字部分
+    match = re.search(r'sub_(\d+)', os.path.basename(os.path.dirname(os.path.dirname(path))))
+    if match:
+        # 将提取的数字字符串转换为整数
+        return int(match.group(1))
+    else:
+        # 如果没有找到匹配，返回无穷大以便排在最后
+        return float('inf')
+
 
 def find_qualifying_directories(root_dir):
     """
@@ -53,7 +76,8 @@ def find_qualifying_directories(root_dir):
             qualifying_dirs.append(os.path.abspath(dirpath))
             print(f"找到符合条件的目录: {os.path.abspath(dirpath)}")
     
-    return qualifying_dirs
+    return sorted(qualifying_dirs, key=extract_subject_number)
+
 
 def main():
     parser = argparse.ArgumentParser(description='找出符合特定条件的目录')
@@ -79,6 +103,7 @@ def main():
         print(f"结果已保存到: {args.output}")
     
     return qualifying_dirs
+
 
 if __name__ == "__main__":
     matching_dirs = main()
