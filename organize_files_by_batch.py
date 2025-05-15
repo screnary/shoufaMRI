@@ -75,14 +75,14 @@ def organize_files_by_batch_parity(directory, out_directory, batch_size):
             even_file_count += 1
             if i % batch_size == 0 or i == 0:
                 even_batch_count += 1
-                print(f"开始处理偶数堆 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
+# print(f"开始处理偶数堆 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
         else:  # 奇数堆
             destination = os.path.join(odd_dir, filename)
             shutil.copy2(file_path, destination)
             odd_file_count += 1
             if i % batch_size == 0 or i == 0:
                 odd_batch_count += 1
-                print(f"开始处理奇数堆 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
+# print(f"开始处理奇数堆 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
     
     print(f"\n处理完成:")
     print(f"- 奇数堆: {odd_batch_count} 堆，共 {odd_file_count} 个文件")
@@ -172,14 +172,14 @@ def organize_files_by_batch_half(directory, out_directory, batch_size):
             first_half_file_count += 1
             if i % batch_size == 0 or i == 0:
                 first_half_batch_count += 1
-                print(f"开始处理前半部分批次 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
+# print(f"开始处理前半部分批次 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
         else:  # 后半部分
             destination = os.path.join(second_half_dir, filename)
             shutil.copy2(file_path, destination)
             second_half_file_count += 1
             if i % batch_size == 0:
                 second_half_batch_count += 1
-                print(f"开始处理后半部分批次 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
+# print(f"开始处理后半部分批次 #{batch_number}，范围: {i+1}~{min(i+batch_size, len(numbered_files))}")
     
     print(f"\n处理完成:")
     print(f"- 前半部分: {first_half_batch_count} 批次，批次范围 1-{half_batch_point}，共 {first_half_file_count} 个文件")
@@ -189,7 +189,7 @@ def organize_files_by_batch_half(directory, out_directory, batch_size):
 
 
 
-def organize_files_by_batch(directory, args.out_directory, batch_size=40, mode='parity'):
+def organize_files_by_batch(directory, out_directory, batch_size=40, mode='parity'):
     """
     将目录中按数字命名的文件按每batch_size个为一堆，根据堆的奇偶性分类
     
@@ -199,9 +199,9 @@ def organize_files_by_batch(directory, args.out_directory, batch_size=40, mode='
         mode: ['parity', 'half'], 'parity'是奇偶样本划分，'half'是前后对半分
     """
     if mode == 'parity':
-        organize_files_by_batch_parity(directory, args.out_directory, batch_size)
+        organize_files_by_batch_parity(directory, out_directory, batch_size)
     elif mode == 'half':
-        organize_files_by_batch_half(directory, args.out_directory, batch_size)
+        organize_files_by_batch_half(directory, out_directory, batch_size)
     
 
 if __name__ == "__main__":
