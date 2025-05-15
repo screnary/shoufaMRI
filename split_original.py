@@ -18,6 +18,6 @@ if __name__ == '__main__':
         print(f"MODE:'{mode}'. 将从 '{src_dir}' 复制文件到 '{tar_dir}'...")
         org_batch.organize_files_by_batch(directory=src_dir, out_directory=tar_dir, batch_size=40, mode=mode)
         if (i+1) % 10 == 0:
-            progress = (i+1 / total_dirs) * 100
+            progress = ((i+1) / total_dirs) * 100
             print(f"进度: {progress:.2f}% ({i+1}/{total_dirs})")
 
