@@ -227,46 +227,6 @@ def split_ori_to_new_files(fpath, ratio, args):
         nib.save(img_1, fname_1)
         nib.save(img_2, fname_2)
 
-def split_ori_to_new_files_skip_sample(fpath, args):
-    """ from subject path get .nii file, save to a dict ; split odd and even into two rest file
-        20250427-from Liu Yang's demand
-    input:
-        fpath: str, 20250118_080626LIUYANGFMRIs002a1001.nii's path (dir)
-    """
-    subj = os.path.basename(fpath)
-    niifs = [f for f in os.listdir(fpath) if f.endswith('.nii')]
-
-    if len(niifs) !=1:
-        print("WARNING!!!   subject {} has not just 1 nii file".format(subj))
-    else:
-        print('Processing: ', subj, niifs[0])
-        niif = niifs[0]
-        nii_img = nib.load(os.path.join(fpath,niif))
-
-        data = nii_img.get_fdata()
-        header = nii_img.header
-        affine = nii_img.affine
-
-        data_1 = data[:,:,:,0::2] #TODO: wrap this with for block
-        data_2 = data[:,:,:,1::2]
-        img_1 = create_nifti(data_1, affine=affine, header=header)
-        img_2 = create_nifti(data_2, affine=affine, header=header)
-
-        updates = {'dim': np.array([4,64,64,40,header['dim'][4]//2,1,1,1],dtype='int16')}
-        update_header_info(img_1, updates)
-        update_header_info(img_2, updates)
-        
-        # save new nii files
-        save_path_1 = os.path.join(args.data_root,'CFH_expand', 'Rest', subj+'_01')
-        save_path_2 = os.path.join(args.data_root,'CFH_expand', 'Rest', subj+'_02')
-        check_and_create(save_path_1)
-        check_and_create(save_path_2)
-        # pdb.set_trace()
-        fname_1 = os.path.join(save_path_1, niif.split('.')[0]+'.nii')
-        fname_2 = os.path.join(save_path_2, niif.split('.')[0]+'.nii')
-        nib.save(img_1, fname_1)
-        nib.save(img_2, fname_2)
-
 def main_for_split_ori_to_new_files():
     ori_bold_path = os.path.join(args.data_root, 'CFH_origin', args.surg_time, args.surg_time+'_BOLD')
     ori_t1_path = os.path.join(args.data_root, 'CFH_origin', args.surg_time, args.surg_time+'_T1')
@@ -296,7 +256,7 @@ if __name__ == '__main__':
     # script: process all data in remote PC
     
     # main_for_split_ori_to_new_files()
-    args.data_root = '/mnt/c/Works/ws/shoufa2025/data/Rest'
+    args.data_root = '/mnt/c/Works/ws/shoufa2025/data/sub_0065_0066_bold'
     ori_bold_path = os.path.join(args.data_root)
 
     if args.data_phase == 'Rest':
@@ -305,7 +265,7 @@ if __name__ == '__main__':
         list_subj_path = sorted(list_subj_path, key=pp.natural_sort_key)
 
         for subj_path in list_subj_path:
-            split_ori_to_new_files_skip_sample(subj_path, args=args)
+            split_ori_to_new_files(subj_path, ratio=2, args=args)
         print('finished split bold files')
     else:
         raise NotImplementedError("data phase shold be in [Rest, Struct]")
