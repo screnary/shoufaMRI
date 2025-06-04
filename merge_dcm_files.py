@@ -204,9 +204,38 @@ def main():
     logger.info("=" * 50)
 
 if __name__ == "__main__":
-    # main()
+
     root_directory = '/mnt/e/data/liuyang/processed_202505/CFH_Original_Data'
     print(f"开始在 '{root_directory}' 中搜索符合条件的目录...")
-    qualifying_dirs = find_qualifying_directories(root_directory)
+    src_dir_list = find_qualifying_directories(root_directory)
+    tar_dir_list = [path.replace('processed_202505', 'original_202505') for path in src_dir_list]
+    total_dirs = len(src_dir_list)
+    print(f"\n搜索完成，共找到 {total_dirs} 个符合条件的目录")
     
-    print(f"\n搜索完成，共找到 {len(qualifying_dirs)} 个符合条件的目录")
+    for i,src_dir in enumerate(src_dir_list):
+        tar_dir = tar_dir_list[i]
+        print(f"将从 '{src_dir}' 复制文件到 '{tar_dir}'...")
+    
+        logger.info("开始合并 DICOM 文件...")
+        logger.info(f"源目录: {src_dir}")
+        
+        # 执行合并
+        start_time = os.times()
+        copied_files, total_files = merge_dcm_files(src_dir, tar_dir)
+        end_time = os.times()
+        
+        # 计算处理时间
+        processing_time = end_time.user - start_time.user + end_time.system - start_time.system
+        
+        # 输出统计信息
+        logger.info("=" * 50)
+        logger.info("合并完成！")
+        logger.info(f"找到的 .dcm 文件总数: {total_files}")
+        logger.info(f"成功复制的文件数: {copied_files}")
+        
+        if total_files > 0:
+            success_rate = (copied_files / total_files) * 100
+            logger.info(f"成功率: {success_rate:.2f}%")
+        
+        logger.info(f"处理时间: {processing_time:.2f} 秒")
+        logger.info("=" * 50)
