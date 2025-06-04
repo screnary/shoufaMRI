@@ -159,8 +159,8 @@ def merge_dcm_files(source_dir, dest_dir):
                     shutil.copy2(source_file, dest_file)
                     copied_files += 1
                     
-                    # 每复制100个文件输出一次进度
-                    if copied_files % 100 == 0:
+                    # 每复制1000个文件输出一次进度
+                    if copied_files % 1000 == 0:
                         logger.info(f"已复制 {copied_files} 个文件...")
                         
                 except Exception as e:
