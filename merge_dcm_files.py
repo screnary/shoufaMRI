@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 合并 AxBOLD 目录下所有子目录中的 .dcm 文件到一个新的目录
 
