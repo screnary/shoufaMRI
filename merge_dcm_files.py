@@ -88,6 +88,7 @@ def find_qualifying_directories(root_dir):
             continue
         
         print(f"找到符合条件的目录: {os.path.abspath(dirpath)}")
+        qualifying_dirs.append(os.path.abspath(dirpath))
     
     return sorted(qualifying_dirs, key=extract_subject_number)
 
