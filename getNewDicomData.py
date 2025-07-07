@@ -2,6 +2,7 @@
     Output new dicom files
 """
 import os
+import glob
 import numpy as np
 from collections import defaultdict
 import cv2
@@ -11,7 +12,9 @@ from pydicom.dataset import Dataset, FileDataset
 from tqdm import tqdm
 import preprocess_data as pp
 from datetime import datetime
+import argparse
 import shutil
+import re
 
 import nibabel as nib
 import pdb
@@ -22,7 +25,6 @@ proj_root = os.path.dirname(os.path.dirname(
 
 
 def argument_parser():
-    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_root', type=str,
                         default="/mnt/e/data/liuyang/",
@@ -228,6 +230,7 @@ def split_ori_to_new_files(fpath, ratio, args):
         nib.save(img_2, fname_2)
 
 def main_for_split_ori_to_new_files():
+    args = argument_parser()
     ori_bold_path = os.path.join(args.data_root, 'CFH_origin', args.surg_time, args.surg_time+'_BOLD')
     ori_t1_path = os.path.join(args.data_root, 'CFH_origin', args.surg_time, args.surg_time+'_T1')
 
@@ -249,7 +252,7 @@ def main_for_split_ori_to_new_files():
     else:
         raise NotImplementedError("data phase shold be in [Rest, Struct]")
 
-if __name__ == '__main__':
+def main_2():
     args = argument_parser()
 
     print("----Start----")
@@ -270,3 +273,175 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError("data phase shold be in [Rest, Struct]")
 
+
+# # 202507 process nifti file directly
+def split_nifti_by_odd_even_volumes(input_nifti_path, output_dir, slices_per_volume=40):
+    """
+    将 NIfTI 文件按照 volume 的奇偶性分割成两个新的 NIfTI 文件
+    
+    参数:
+        input_nifti_path: 输入 NIfTI 文件路径
+        output_dir: 输出目录
+        slices_per_volume: 每个 volume 包含的 slice 数量
+    """
+    # 创建输出目录
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # 加载 NIfTI 文件
+    print(f"正在加载 {input_nifti_path}...")
+    nifti_img = nib.load(input_nifti_path)
+    
+    # 获取数据和头信息
+    data = nifti_img.get_fdata()
+    header = nifti_img.header
+    affine = nifti_img.affine
+    
+    # 打印基本信息
+    print(f"图像维度: {data.shape}")  # (64,64,40,300)
+    print(f"数据类型: {data.dtype}")  # float64
+    
+    # 计算 volume 总数
+    total_volumes = data.shape[3]
+    print(f"总 volume 数: {total_volumes} (每个 volume 包含 {slices_per_volume} 个 slice)")
+    
+    # 创建奇偶 volume 的空数组
+    # 确定输出数组的形状
+    odd_shape = list(data.shape)
+    even_shape = list(data.shape)
+    
+    # 计算奇数和偶数 volume 的数量
+    odd_volumes_count = total_volumes // 2 + (1 if total_volumes % 2 == 1 else 0)
+    even_volumes_count = total_volumes // 2
+    
+    # 设置输出数组的第三维度(volume维度)
+    odd_shape[3] = odd_volumes_count
+    even_shape[3] = even_volumes_count
+    
+    # 创建输出数组
+    odd_data = np.zeros(odd_shape, dtype=data.dtype)
+    even_data = np.zeros(even_shape, dtype=data.dtype)
+    
+    # 分割数据
+    odd_idx = 0
+    even_idx = 0
+    
+    print(f"开始分割数据...")
+    for vol_idx in tqdm(range(total_volumes), desc="处理 volume"):
+        # 计算当前 volume 的切片范围
+        start_vol = vol_idx
+        end_vol = vol_idx + 1
+        
+        # 提取当前 volume 的所有切片
+        volume_data = data[:, :, :, start_vol:end_vol]
+        
+        # 根据 volume 的奇偶性，将其放入相应的数组
+        if (vol_idx+1) % 2 == 0:  # 奇数 volume (从0开始计数，0为第一个volume，是偶数)
+            odd_start = odd_idx
+            odd_end = odd_start + 1
+            odd_data[:, :, :, odd_start:odd_end] = volume_data
+            odd_idx += 1
+        else:  # 偶数 volume
+            even_start = even_idx
+            even_end = even_start + 1
+            even_data[:, :, :, even_start:even_end] = volume_data
+            even_idx += 1
+    
+    # 创建并保存新的 NIfTI 文件
+    print(f"创建奇数 volume 的 NIfTI 文件...")
+    odd_nifti = nib.Nifti1Image(odd_data, affine, header)
+    odd_output_path = os.path.join(output_dir, os.path.basename(input_nifti_path).replace('.nii', '_odd.nii'))
+    nib.save(odd_nifti, odd_output_path)
+    
+    print(f"创建偶数 volume 的 NIfTI 文件...")
+    even_nifti = nib.Nifti1Image(even_data, affine, header)
+    even_output_path = os.path.join(output_dir, os.path.basename(input_nifti_path).replace('.nii', '_even.nii'))
+    nib.save(even_nifti, even_output_path)
+    
+    # 打印结果信息
+    print(f"\n处理完成!")
+    print(f"奇数 volume NIfTI 文件 (共 {odd_volumes_count} 个 volumes, {odd_idx * slices_per_volume} 个 slices):")
+    print(f"  保存路径: {odd_output_path}")
+    print(f"  数据形状: {odd_data.shape}")
+    
+    print(f"\n偶数 volume NIfTI 文件 (共 {even_volumes_count} 个 volumes, {even_idx * slices_per_volume} 个 slices):")
+    print(f"  保存路径: {even_output_path}")
+    print(f"  数据形状: {even_data.shape}")
+
+
+if __name__ == '__main__':
+    # 20250707 process nifti file directly
+    # 将 NIfTI 文件按照 volume 的奇偶性分割
+    def extract_subject_number(path):
+        """
+        从路径中提取sub_XXXX格式的数字部分
+        例如从'/mnt/f/CFH_Original_Data/sub_0053_1040368_wu_yong_liang/...'提取出53
+        
+        Args:
+            path: 包含子目录的路径
+        
+        Returns:
+            int: 提取的数字，如果没有找到则返回float('inf')作为排序的默认值
+        """
+        # 使用正则表达式查找sub_后跟随的数字部分
+        match = re.search(r'sub_(\d+)_', path)
+        if match:
+            # 将提取的数字字符串转换为整数
+            return int(match.group(1))
+        else:
+            # 如果没有找到匹配，返回无穷大以便排在最后
+            return float('inf')
+
+    def find_qualifying_directories(root_dir):
+        """
+        遍历指定目录，找出符合以下条件的子目录：
+        1. 目录名称以'AxBOLD'结尾
+        2. 为最末级子目录（不包含子目录）
+        
+        Args:
+            root_dir: 根目录路径
+        
+        Returns:
+            list: 符合条件的目录绝对路径列表
+        """
+        qualifying_dirs = []
+        
+        # 计数器用于显示进度
+        total_dirs = 0
+        processed_dirs = 0
+        
+        # 首先统计总目录数以便显示进度
+        print("计算总目录数...")
+        for _, dirnames, _ in os.walk(root_dir):
+            total_dirs += len(dirnames)
+        
+        print(f"开始处理，总共 {total_dirs} 个目录...")
+        
+        # 遍历所有目录
+        for dirpath, dirnames, filenames in os.walk(root_dir):
+            processed_dirs += 1
+
+            # 每处理100个目录显示一次进度
+            if processed_dirs % 100 == 0:
+                progress = (processed_dirs / total_dirs) * 100
+                print(f"进度: {progress:.2f}% ({processed_dirs}/{total_dirs})")
+            
+            # 检查1: 目录名是否以'AxBOLD'结尾
+            if not os.path.basename(dirpath).endswith('AxBOLD'):
+                continue
+            
+            # 检查2: 是否为最末级子目录（不包含其他子目录）
+            if dirnames:  # 如果dirnames不为空，说明有子目录
+                continue
+
+            qualifying_dirs.append(os.path.abspath(dirpath))
+
+        return sorted(qualifying_dirs, key=extract_subject_number)
+    
+    src_dir_list = find_qualifying_directories(root_dir='/mnt/c/Works/ws/shoufa2025/data/CFH_original_2507')
+    tar_dir_list = [path.replace('original_2507', 'processed_2507') for path in src_dir_list]
+
+    for i,src_dir in enumerate(src_dir_list):
+        tar_dir = tar_dir_list[i]
+        input_nii_file = glob.glob(os.path.join(src_dir, "*.nii"))[0]
+        split_nifti_by_odd_even_volumes(input_nifti_path=input_nii_file, output_dir=tar_dir, slices_per_volume=40)
