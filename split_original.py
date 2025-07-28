@@ -1,5 +1,5 @@
-import organize_files_by_batch as org_batch
-import find_qualifying_directories as find_dir
+import utils.organize_files_by_batch as org_batch
+import utils.dir_utils as find_dir
 
 
 def main1():

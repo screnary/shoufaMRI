@@ -1,8 +1,72 @@
+"""
+all directory utilities
+"""
+
 import os
 import re
 import argparse
+from pathlib import Path
 import glob
 import pdb
+
+
+def get_nii_files_with_pattern(directory, pattern="*.nii*", recursive=True):
+    """
+    获取目录下所有.nii文件的完整路径
+    
+    Parameters:
+    -----------
+    directory : str
+        顶级目录路径
+    pattern : str, default="*.nii*"
+        文件匹配模式，支持 .nii, .nii.gz 等
+    recursive : bool, default=True
+        是否递归搜索子目录
+    
+    Returns:
+    --------
+    list
+        包含所有.nii文件完整路径的列表
+    
+    Examples:
+    ---------
+    目录结构:
+    data/
+    ├── subject_001/
+    │   └── brain.nii.gz
+    ├── subject_002/
+    │   └── brain.nii
+    └── subject_003/
+        └── scan.nii.gz
+    
+    >>> files = get_nii_files('data/')
+    >>> print(files)
+    ['data/subject_001/brain.nii.gz', 'data/subject_002/brain.nii', 'data/subject_003/scan.nii.gz']
+    """
+    
+    nii_files = []
+    directory = Path(directory)
+    
+    if not directory.exists():
+        print(f"警告: 目录 {directory} 不存在")
+        return []
+    
+    if recursive:
+        # 方法1: 使用pathlib递归搜索 (推荐)
+        for pattern_type in ['*.nii', '*.nii.gz']:
+            nii_files.extend(directory.rglob(pattern_type))
+    else:
+        # 只搜索直接子目录
+        for subdir in directory.iterdir():
+            if subdir.is_dir():
+                for pattern_type in ['*.nii', '*.nii.gz']:
+                    nii_files.extend(subdir.glob(pattern_type))
+    
+    # 转换为字符串路径并排序
+    nii_files = sorted([str(f) for f in nii_files])
+    
+    return nii_files
+
 
 def extract_subject_number(path):
     """
