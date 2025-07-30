@@ -159,7 +159,7 @@ def add_noise_avoid_coordinates(nifti_file, mni_coordinates,
     print(f"要保护的MNI坐标数量: {len(mni_coordinates)}")
     
     # 创建保护mask
-    protection_mask = create_protection_mask(
+    protection_mask, protection_centers = create_protection_mask(
         data.shape[:3], affine, mni_coordinates, avoid_radius
     )
     print(f"保护的体素数量: {np.sum(protection_mask)}")
@@ -290,12 +290,10 @@ def create_protection_mask(shape_3d, affine, mni_coordinates, avoid_radius):
     mask = np.zeros(shape_3d, dtype=bool)
     
     # 计算体素大小
-    voxel_sizes = np.abs(np.diag(affine)[:3])
-    voxel_size = np.mean(voxel_sizes)  # 使用平均体素大小
+    voxel_size = np.abs(affine[0, 0])  # 通常是3mm
     voxel_radius = int(np.ceil(avoid_radius / voxel_size))
     
-    print(f"体素大小: {voxel_sizes}")
-    print(f"平均体素大小: {voxel_size:.2f}mm")
+    print(f"体素大小: {voxel_size:.2f}mm")
     print(f"避开半径: {avoid_radius}mm = {voxel_radius}个体素")
     
     protection_centers = []  # 记录保护中心用于验证

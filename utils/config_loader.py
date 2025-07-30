@@ -12,6 +12,7 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 import jsonschema
 from jsonschema import validate, ValidationError
+from utils.exp_frame_noise import ExperimentConfig  # 避免循环导入
 
 cur_path = os.path.abspath(__file__)  #/mnt/c/Works/ws/shoufa2025/code/shoufaMRI/utils/config_loader.py
 
@@ -80,6 +81,7 @@ class ExperimentConfigYAML:
     max_workers: int = 4
     skip_existing: bool = True
     save_intermediate: bool = True
+    max_subjects: Optional[int] = None
     
     # 输出选项
     save_config: bool = True
@@ -534,6 +536,7 @@ class ConfigLoader:
             max_workers=execution.get('max_workers', 4),
             skip_existing=execution.get('skip_existing', True),
             save_intermediate=execution.get('save_intermediate', True),
+            max_subjects=execution.get('max_subjects', None),
             
             # 输出选项
             save_config=output.get('save_config', True),
@@ -564,8 +567,6 @@ class ConfigLoader:
                                  coordinate_group_name: str = "whole") -> 'ExperimentConfig':
         """将YAML配置转换为原始ExperimentConfig"""
         
-        from exp_frame_noise import ExperimentConfig  # 避免循环导入
-        
         # 获取指定的坐标组
         coord_group = yaml_config.get_coordinate_group_by_name(coordinate_group_name)
         if coord_group is None:
@@ -591,6 +592,7 @@ class ConfigLoader:
             save_mask=yaml_config.save_mask,
             use_brain_mask=yaml_config.use_brain_mask,
             max_workers=yaml_config.max_workers,
+            max_subjects=yaml_config.max_subjects,
             skip_existing=yaml_config.skip_existing,
             save_intermediate=yaml_config.save_intermediate
         )

@@ -19,8 +19,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import traceback
 
 # import custom module
-import dir_utils
-import add_noise_to_volumes as noise
+import utils.dir_utils as dir_utils
+import utils.add_noise_to_volumes as noise
 
 @dataclass
 class ExperimentConfig:
@@ -45,6 +45,7 @@ class ExperimentConfig:
     
     # 实验选项
     max_workers: int = 4
+    max_subjects: Optional[int] = None  # if assign subject number being processed
     skip_existing: bool = True
     save_intermediate: bool = True
 
@@ -260,9 +261,16 @@ class NoiseExperimentRunner:
         
         # 获取输入文件
         nii_dir = os.path.join(self.config.data_root, self.config.input_subdir)
-        nii_files = dir_utils.get_nii_files_with_pattern(nii_dir)
+        nii_files_all = dir_utils.get_nii_files_with_pattern(nii_dir)
         
-        self.logger.info(f"找到 {len(nii_files)} 个NIfTI文件")
+        if self.config.max_subjects is not None:
+            nii_files = nii_files_all[:self.config.max_subjects]
+            # import pdb
+            # pdb.set_trace()
+        else:
+            nii_files = nii_files_all
+        
+        self.logger.info(f"共处理 {len(nii_files)}/{len(nii_files_all)} 个NIfTI文件")
         
         # 生成参数组合
         param_combinations = self._generate_parameter_combinations()
