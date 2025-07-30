@@ -285,56 +285,127 @@ def brain_mask_extraction(volume_data, method='morphological'):
     return brain_mask
 
 def create_protection_mask(shape_3d, affine, mni_coordinates, avoid_radius):
-    """创建保护区域mask"""
+    """修正的保护区域mask创建"""
     
     mask = np.zeros(shape_3d, dtype=bool)
     
-    # 计算体素大小（假设各向同性）
-    voxel_size = np.abs(affine[0, 0])  # 通常是3mm
+    # 计算体素大小
+    voxel_sizes = np.abs(np.diag(affine)[:3])
+    voxel_size = np.mean(voxel_sizes)  # 使用平均体素大小
     voxel_radius = int(np.ceil(avoid_radius / voxel_size))
     
-    print(f"体素大小: {voxel_size}mm")
+    print(f"体素大小: {voxel_sizes}")
+    print(f"平均体素大小: {voxel_size:.2f}mm")
     print(f"避开半径: {avoid_radius}mm = {voxel_radius}个体素")
     
+    protection_centers = []  # 记录保护中心用于验证
+    
     for mni_coord in mni_coordinates:
-        # 将MNI坐标转换为体素坐标
+        # MNI到体素坐标
         mni_homog = np.array([mni_coord[0], mni_coord[1], mni_coord[2], 1])
         voxel_coord = np.linalg.inv(affine) @ mni_homog
+        
+        # 不要取整，保持精确坐标
+        i_center, j_center, k_center = voxel_coord[:3]
         i, j, k = np.round(voxel_coord[:3]).astype(int)
+        
+        # print(f"MNI{mni_coord} -> 精确体素({i_center:.2f},{j_center:.2f},{k_center:.2f}) -> 整数体素({i},{j},{k})")
         
         # 检查坐标是否在范围内
         if (0 <= i < shape_3d[0] and 
             0 <= j < shape_3d[1] and 
             0 <= k < shape_3d[2]):
             
-            # 创建球形保护区域
-            mask = add_spherical_protection(mask, (i, j, k), voxel_radius)
-            # print(f"MNI{mni_coord} -> 体素({i},{j},{k}) 已保护")
+            # 使用精确中心创建球形保护区域
+            mask = add_spherical_protection(mask, (i_center, j_center, k_center), voxel_radius)
+            protection_centers.append((i_center, j_center, k_center))
         else:
             print(f"警告: MNI{mni_coord} -> 体素({i},{j},{k}) 超出范围")
     
-    return mask
+    return mask, protection_centers
 
 def add_spherical_protection(mask, center, radius):
-    """在mask中添加球形保护区域"""
+    """使用精确中心创建球形保护区域"""
     
     i0, j0, k0 = center
     shape = mask.shape
     
-    # 创建网格
-    i_range = range(max(0, i0-radius), min(shape[0], i0+radius+1))
-    j_range = range(max(0, j0-radius), min(shape[1], j0+radius+1))
-    k_range = range(max(0, k0-radius), min(shape[2], k0+radius+1))
+    # 扩展搜索范围以确保完整球形
+    i_min = max(0, int(np.floor(i0 - radius)))
+    i_max = min(shape[0], int(np.ceil(i0 + radius)) + 1)
+    j_min = max(0, int(np.floor(j0 - radius)))
+    j_max = min(shape[1], int(np.ceil(j0 + radius)) + 1)
+    k_min = max(0, int(np.floor(k0 - radius)))
+    k_max = min(shape[2], int(np.ceil(k0 + radius)) + 1)
     
-    for i in i_range:
-        for j in j_range:
-            for k in k_range:
-                # 计算到中心的距离
+    for i in range(i_min, i_max):
+        for j in range(j_min, j_max):
+            for k in range(k_min, k_max):
+                # 计算到精确中心的距离
                 distance = np.sqrt((i-i0)**2 + (j-j0)**2 + (k-k0)**2)
                 if distance <= radius:
                     mask[i, j, k] = True
     
     return mask
+
+
+"""
+>>>>>>>>>>>>>>>>>>>>>>>不再使用: 坐标对齐不精确
+"""
+# def create_protection_mask(shape_3d, affine, mni_coordinates, avoid_radius):
+#     """创建保护区域mask"""
+    
+#     mask = np.zeros(shape_3d, dtype=bool)
+    
+#     # 计算体素大小（假设各向同性）
+#     voxel_size = np.abs(affine[0, 0])  # 通常是3mm
+#     voxel_radius = int(np.ceil(avoid_radius / voxel_size))
+    
+#     print(f"体素大小: {voxel_size}mm")
+#     print(f"避开半径: {avoid_radius}mm = {voxel_radius}个体素")
+    
+#     for mni_coord in mni_coordinates:
+#         # 将MNI坐标转换为体素坐标
+#         mni_homog = np.array([mni_coord[0], mni_coord[1], mni_coord[2], 1])
+#         voxel_coord = np.linalg.inv(affine) @ mni_homog
+#         i, j, k = np.round(voxel_coord[:3]).astype(int)
+        
+#         # 检查坐标是否在范围内
+#         if (0 <= i < shape_3d[0] and 
+#             0 <= j < shape_3d[1] and 
+#             0 <= k < shape_3d[2]):
+            
+#             # 创建球形保护区域
+#             mask = add_spherical_protection(mask, (i, j, k), voxel_radius)
+#             # print(f"MNI{mni_coord} -> 体素({i},{j},{k}) 已保护")
+#         else:
+#             print(f"警告: MNI{mni_coord} -> 体素({i},{j},{k}) 超出范围")
+    
+#     return mask
+
+# def add_spherical_protection(mask, center, radius):
+#     """在mask中添加球形保护区域"""
+    
+#     i0, j0, k0 = center
+#     shape = mask.shape
+    
+#     # 创建网格
+#     i_range = range(max(0, i0-radius), min(shape[0], i0+radius+1))
+#     j_range = range(max(0, j0-radius), min(shape[1], j0+radius+1))
+#     k_range = range(max(0, k0-radius), min(shape[2], k0+radius+1))
+    
+#     for i in i_range:
+#         for j in j_range:
+#             for k in k_range:
+#                 # 计算到中心的距离
+#                 distance = np.sqrt((i-i0)**2 + (j-j0)**2 + (k-k0)**2)
+#                 if distance <= radius:
+#                     mask[i, j, k] = True
+    
+#     return mask
+"""
+<<<<<<<<<<<<<<<<<<<<<<<<<<<不再使用: 坐标对齐不精确
+"""
 
 def get_default_noise_params(noise_type, data):
     """获取默认噪声参数"""

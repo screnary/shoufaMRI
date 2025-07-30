@@ -149,8 +149,8 @@ def main_1():
             use_brain_mask=True
         )
 
-
-if __name__ == "__main__":
+def main_2():
+    # 处理本地数据，为了进行可视化 demo
     data_root = "/mnt/c/Works/ws/shoufa2025/data"  # local data
     nii_dir = os.path.join(data_root, 'nii_data_2507')
     print(f"processing path {nii_dir}")
@@ -173,3 +173,8 @@ if __name__ == "__main__":
             save_mask=False,  # if save protection mask
             use_brain_mask=True
         )
+
+
+if __name__ == "__main__":
+    # 实验：分组批量处理实验，探索noise的幅度、protection region大小的影响
+    print("Please Using Experiment Framework!")

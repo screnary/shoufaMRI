@@ -44,7 +44,7 @@ def visualize_volume_3d(nifti_file, volume_idx=0, visualization_type='volume',
         volume_data = preprocess_volume_data(volume_data)
         
         # 创建PyVista的StructuredGrid
-        grid = create_pyvista_grid(volume_data, affine)
+        grid = create_consistent_pyvista_grid(volume_data, affine)
         
         # 数据统计
         print_data_statistics(volume_data)
@@ -177,7 +177,7 @@ def calculate_otsu_threshold(data):
         return bin_centers[valley_idx] if valley_idx < len(bin_centers) else data.mean()
 
 def create_pyvista_grid(volume_data, affine):
-    """创建PyVista的结构化网格（更新版本）"""
+    """创建PyVista的结构化网格（不精确，不再使用）"""
     
     print("创建PyVista网格...")
     
@@ -201,6 +201,39 @@ def create_pyvista_grid(volume_data, affine):
     grid.point_data['values'] = data.ravel()  # flattening to 1d array
     
     print(f"网格创建完成: {grid.n_points} 点, {grid.n_cells} 单元")
+    
+    return grid
+
+def create_consistent_pyvista_grid(data, affine, origin_at_center=True):
+    """
+    创建与医学影像坐标系统一致的PyVista网格
+    
+    参数:
+    - data: 3D数组
+    - affine: 仿射变换矩阵
+    - origin_at_center: 是否将原点设置在体素中心
+    """
+    
+    # 获取体素大小
+    voxel_sizes = np.abs(np.diag(affine)[:3])
+    
+    # 计算原点
+    if origin_at_center:
+        # 体素中心偏移
+        origin = affine[:3, 3] - voxel_sizes / 2
+    else:
+        # 体素角落
+        origin = affine[:3, 3]
+    
+    # 创建ImageData
+    grid = pv.ImageData(
+        dimensions=data.shape,
+        spacing=voxel_sizes,
+        origin=origin
+    )
+    
+    # 添加数据
+    grid.point_data['values'] = data.ravel(order='F')
     
     return grid
 
@@ -383,7 +416,7 @@ def visualize_basic_slices(plotter, grid, cmap):
 
 # using 3D visualization for data analysing
 def visualize_noise_comparison_3d(original_file, noisy_file, volume_idx=0, 
-                                 mni_coordinates=None, avoid_radius=5):
+                                 mni_coordinates=None, avoid_radius=6):
     """3D可视化噪声前后对比"""
     
     # 加载数据
@@ -405,17 +438,18 @@ def visualize_noise_comparison_3d(original_file, noisy_file, volume_idx=0,
     diff = noisy_vol - original_vol
     
     # 创建网格
-    original_grid = create_pyvista_grid(original_vol, original_img.affine)
-    noisy_grid = create_pyvista_grid(noisy_vol, original_img.affine)
-    diff_grid = create_pyvista_grid(diff, original_img.affine)
+    original_grid = create_consistent_pyvista_grid(original_vol, original_img.affine)
+    noisy_grid = create_consistent_pyvista_grid(noisy_vol, original_img.affine)
+    diff_grid = create_consistent_pyvista_grid(diff, original_img.affine)
     
     # 创建子图
-    plotter = pv.Plotter(shape=(2, 2), window_size=(1600, 1200))
+    plotter = pv.Plotter(shape=(2, 2), window_size=(1000, 800))
     plotter.set_background('white')
     
     # 原始数据
     plotter.subplot(0, 0)
-    plotter.add_title("原始数据")
+    plotter.add_title("Original Data")
+    plotter.add_axes()
     threshold_orig = np.percentile(original_vol[original_vol > 0], 70)
     iso_orig = original_grid.contour([threshold_orig])
     if iso_orig.n_points > 0:
@@ -423,7 +457,8 @@ def visualize_noise_comparison_3d(original_file, noisy_file, volume_idx=0,
     
     # 噪声数据
     plotter.subplot(0, 1)
-    plotter.add_title("添加噪声后")
+    plotter.add_title("Noisy Data")
+    plotter.add_axes()
     threshold_noisy = np.percentile(noisy_vol[noisy_vol > 0], 70)
     iso_noisy = noisy_grid.contour([threshold_noisy])
     if iso_noisy.n_points > 0:
@@ -431,12 +466,17 @@ def visualize_noise_comparison_3d(original_file, noisy_file, volume_idx=0,
     
     # 差异可视化
     plotter.subplot(1, 0)
-    plotter.add_title("差异 (噪声-原始)")
+    plotter.add_title("Diff (Noisy-Original)")
+    plotter.add_axes()
     # 只显示显著差异
-    diff_threshold = np.std(diff[diff != 0]) * 2
+    diff_threshold = np.std(diff[diff != 0]) * 3
     pos_diff = diff_grid.threshold(diff_threshold)
-    neg_diff = diff_grid.threshold(-diff_threshold, invert=True)
-    
+    neg_diff = diff_grid.threshold(-diff_threshold*0.05, invert=True)
+    print(f"Different threshold is {diff_threshold}")
+    print(f"diff value range: [min,max]= [{diff.min(), diff.max()}")
+    print(f"pos_diff point numer:{pos_diff.n_points}; neg_diff point number:{neg_diff.n_points}")
+
+    visualize_slices(plotter, diff_grid, cmap='viridis')
     if pos_diff.n_points > 0:
         plotter.add_mesh(pos_diff, color='red', opacity=0.7)
     if neg_diff.n_points > 0:
@@ -444,7 +484,8 @@ def visualize_noise_comparison_3d(original_file, noisy_file, volume_idx=0,
     
     # 保护区域可视化（如果提供了坐标）
     plotter.subplot(1, 1)
-    plotter.add_title("保护区域")
+    plotter.add_title("Protection Areas")
+    plotter.add_axes()
     if mni_coordinates is not None:
         visualize_protection_regions_3d(plotter, original_img.affine, 
                                        original_vol.shape, mni_coordinates, 
@@ -452,19 +493,27 @@ def visualize_noise_comparison_3d(original_file, noisy_file, volume_idx=0,
     
     # 添加MNI坐标点
     if mni_coordinates is not None:
-        add_mni_coordinates_to_plot(plotter, mni_coordinates, original_img.affine)
+        add_mni_coordinates_to_plot(plotter, mni_coordinates, original_img.affine, reference_grid=original_grid)
     
     plotter.show()
 
 def visualize_protection_regions_3d(plotter, affine, shape, mni_coordinates, avoid_radius):
-    """3D可视化保护区域"""
+    """修正的3D保护区域可视化"""
+    
+    print("=== 创建修正的保护区域可视化 ===")
     
     # 创建保护mask
     from utils.add_noise_to_volumes import create_protection_mask  # 使用之前定义的函数
-    protection_mask = create_protection_mask(shape, affine, mni_coordinates, avoid_radius)
+    protection_mask, centers = create_protection_mask(shape, affine, mni_coordinates, avoid_radius)
     
-    # 创建保护区域网格
-    protection_grid = create_pyvista_grid(protection_mask.astype(float), affine)
+    # 创建一致的PyVista网格
+    protection_grid = create_consistent_pyvista_grid(protection_mask.astype(float), affine)
+    
+    print(f"保护网格信息:")
+    print(f"  维度: {protection_grid.dimensions}")
+    print(f"  间距: {protection_grid.spacing}")
+    print(f"  原点: {protection_grid.origin}")
+    print(f"  边界: {protection_grid.bounds}")
     
     # 创建等值面
     iso_protection = protection_grid.contour([0.5])
@@ -472,32 +521,58 @@ def visualize_protection_regions_3d(plotter, affine, shape, mni_coordinates, avo
     if iso_protection.n_points > 0:
         plotter.add_mesh(iso_protection, color='yellow', opacity=0.6, 
                         label='保护区域')
-
-
-def add_mni_coordinates_to_plot(plotter, mni_coordinates, affine):
-    """在3D图中添加MNI坐标点"""
+        print(f"✓ 添加保护区域: {iso_protection.n_points} 点, {iso_protection.n_cells} 面")
+    else:
+        print("❌ 保护区域等值面为空")
     
-    # 转换MNI坐标到体素坐标，再到物理坐标
-    voxel_size = np.abs(np.diag(affine)[:3])
+    return protection_grid, centers
+
+def add_mni_coordinates_to_plot(plotter, mni_coordinates, affine, reference_grid=None):
+    """修正的MNI坐标添加函数"""
     
-    points = []
-    for mni_coord in mni_coordinates:
-        # MNI到体素坐标
-        mni_homog = np.array([mni_coord[0], mni_coord[1], mni_coord[2], 1])
-        voxel_coord = np.linalg.inv(affine) @ mni_homog
+    print("=== 添加修正的MNI坐标点 ===")
+    
+    # 如果有参考网格，使用相同的坐标系统
+    if reference_grid is not None:
+        # 使用网格的坐标系统
+        grid_origin = np.array(reference_grid.origin)
+        grid_spacing = np.array(reference_grid.spacing)
         
-        # 体素坐标到物理坐标（用于PyVista）
-        phys_coord = voxel_coord[:3] * voxel_size
-        points.append(phys_coord)
+        points = []
+        for mni_coord in mni_coordinates:
+            # MNI到体素坐标
+            mni_homog = np.array([mni_coord[0], mni_coord[1], mni_coord[2], 1])
+            voxel_coord = np.linalg.inv(affine) @ mni_homog  # voxel_coord = inv(affine) @ mni_homog; mni_coord = affine @ voxel_homog
+            
+            # 转换到网格的物理坐标系统
+            physical_coord = grid_origin + voxel_coord[:3] * grid_spacing
+            points.append(physical_coord)
+            
+            # print(f"MNI{mni_coord} -> 体素{voxel_coord[:3]} -> 网格物理{physical_coord}")
+    else:
+        # 使用标准的医学影像坐标转换
+        points = []
+        for mni_coord in mni_coordinates:
+            mni_homog = np.array([mni_coord[0], mni_coord[1], mni_coord[2], 1])
+            # voxel_homog = np.linalg.inv(affine) @ mni_homog
+            # # 直接使用仿射变换
+            # physical_coord = affine @ voxel_homog
+            physical_coord = mni_homog
+            points.append(physical_coord[:3])
+            
+            # print(f"MNI{mni_coord} -> 直接物理{physical_coord[:3]}")
     
     if points:
         points_array = np.array(points)
         point_cloud = pv.PolyData(points_array)
-        plotter.add_mesh(point_cloud, color='red', point_size=10, 
+        plotter.add_mesh(point_cloud, color='red', point_size=8, 
                         render_points_as_spheres=True, label='MNI坐标点')
+        
+        print(f"✓ 添加{len(points)}个MNI坐标点")
+        # print(f"  点位置: {points_array}")
 
 
-# get 
+# get config info
 def get_vis_config(nifti_file, volume_idx=0):
     mni_coords = [  # avoid DMN, SN, CEN nodes
     (-18, 24, 53),
@@ -633,6 +708,6 @@ def get_vis_config(nifti_file, volume_idx=0):
     volume_data = preprocess_volume_data(volume_data)
     
     # 创建PyVista的StructuredGrid
-    grid = create_pyvista_grid(volume_data, affine)
+    grid = create_consistent_pyvista_grid(volume_data, affine)
 
     return data.shape, affine, mni_coords, grid

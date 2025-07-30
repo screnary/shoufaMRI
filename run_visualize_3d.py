@@ -129,22 +129,29 @@ if __name__ == "__main__":
     # data_root = "/mnt/c/Works/ws/shoufa2025/data"
     data_root = "C:\\Works\\ws\\shoufa2025\\data"  # 移动硬盘
 
-    # noise added
-    nii_dir = os.path.join(data_root, '05_original_data_no_editing_processed_addnoise', 'pre_surgery', 'RestTARWSDCF')
-    nii_fnames = dir_utils.get_nii_files_with_pattern(nii_dir)
+    # # noise added
+    # nii_dir = os.path.join(data_root, '05_original_data_no_editing_processed_addnoise', 'pre_surgery', 'RestTARWSDCF')
+    # nii_fnames = dir_utils.get_nii_files_with_pattern(nii_dir)
 
     # original data
     nii_dir_2 = os.path.join(data_root, 'nii_data_2507_noised_new')
     nii_fnames_2 = dir_utils.get_nii_files_with_pattern(nii_dir_2)
+    # noised data
+    nii_dir_3 = os.path.join(data_root, 'nii_data_2507')
+    nii_fnames_3 = dir_utils.get_nii_files_with_pattern(nii_dir_3)
 
     nii_fname = nii_fnames_2[0]
+    nii_fname_noised = nii_fnames_3[0]
     # _, plotter = vis3d.visualize_volume_3d(nii_fname, volume_idx=0, visualization_type='volume',  # 'volume', 'isosurface', 'contour', 'slices'
     #                    threshold=None, opacity=0.4, cmap='viridis')
 
-    # check protection regions
+    # # check protection regions
     datashape, affine, mni_coords, grid= vis3d.get_vis_config(nii_fname)
-    plotter = pv.Plotter(window_size=(1200, 800))
-    plotter.set_background('white')
-    vis3d.visualize_slices(plotter, grid, cmap='viridis')
-    vis3d.visualize_protection_regions_3d(plotter, affine, datashape, mni_coords, avoid_radius=8)
-    plotter.show()
+    # plotter = pv.Plotter(window_size=(1200, 800))
+    # plotter.set_background('white')
+    # vis3d.visualize_slices(plotter, grid, cmap='viridis')
+    # vis3d.visualize_protection_regions_3d(plotter, affine, datashape, mni_coords, avoid_radius=8)
+    # plotter.show()
+
+    vis3d.visualize_noise_comparison_3d(nii_fnames_2[0], nii_fnames_3[0], volume_idx=0, 
+                                        mni_coordinates=mni_coords, avoid_radius=6)
