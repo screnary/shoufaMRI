@@ -5,6 +5,7 @@
 """
 
 import os
+import sys
 import json
 import time
 import logging
@@ -17,10 +18,22 @@ import pandas as pd
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import traceback
+import pdb
+
+# 检查是否作为包的一部分运行
+if __package__ is None:
+    # 直接运行的情况，添加项目根目录到路径: (../../shoufaMRI)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    
+    # 设置包名
+    __package__ = 'utils'
 
 # import custom module
-import utils.dir_utils as dir_utils
-import utils.add_noise_to_volumes as noise
+from . import dir_utils
+from . import add_noise_to_volumes as noise
+
 
 @dataclass
 class ExperimentConfig:
@@ -529,8 +542,8 @@ def run_custom_experiment():
     return results
 
 if __name__ == "__main__":
-    # 运行默认实验
-    run_noise_parameter_experiment()
+    print(sys.path)
+    # run_noise_parameter_experiment()
     
     # 或运行自定义实验
     # run_custom_experiment()
