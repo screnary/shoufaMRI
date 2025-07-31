@@ -16,6 +16,7 @@ if __package__ is None:
     __package__ = relative_path.replace(os.sep, '.')
     print(f"设置包名: {__package__}")  # shoufaMRI
 try:
+    # from .utils import directory_utils
     import shoufaMRI.utils.directory_utils as directory_utils
     import shoufaMRI.core.volume_noise_operations as noise
     import shoufaMRI.utils.visualize as vis3d
