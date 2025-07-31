@@ -26,13 +26,16 @@ if __package__ is None:
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
+    parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
     
     # 设置包名
-    __package__ = 'utils'
+    __package__ = 'shoufaMRI.core'
 
 # import custom module
-from . import dir_utils
-from . import add_noise_to_volumes as noise
+from ..utils import directory_utils
+from . import volume_noise_operations as noise
 
 
 @dataclass
@@ -274,7 +277,7 @@ class NoiseExperimentRunner:
         
         # 获取输入文件
         nii_dir = os.path.join(self.config.data_root, self.config.input_subdir)
-        nii_files_all = dir_utils.get_nii_files_with_pattern(nii_dir)
+        nii_files_all = directory_utils.get_nii_files_with_pattern(nii_dir)
         
         if self.config.max_subjects is not None:
             nii_files = nii_files_all[:self.config.max_subjects]

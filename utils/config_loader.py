@@ -19,11 +19,14 @@ if __package__ is None:
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
+    parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
     
     # 设置包名
-    __package__ = 'utils'
+    __package__ = 'shoufaMRI.utils'
 
-from .exp_frame_noise import ExperimentConfig  # 避免循环导入
+from ..core.exp_frame_noise import ExperimentConfig  # 避免循环导入
 
 cur_path = os.path.abspath(__file__)  #/mnt/c/Works/ws/shoufa2025/code/shoufaMRI/utils/config_loader.py
 

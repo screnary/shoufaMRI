@@ -1,8 +1,23 @@
+import os,sys
 import pyvista as pv
 import nibabel as nib
 import numpy as np
 import pdb
 
+# 检查是否作为包的一部分运行
+if __package__ is None:
+    # 直接运行的情况，添加项目根目录到路径: (../../shoufaMRI)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+    
+    # 设置包名
+    __package__ = 'shoufaMRI.utils'
+
+from ..core.volume_noise_operations import create_protection_mask  # 使用定义好的函数
 
 def visualize_volume_3d(nifti_file, volume_idx=0, visualization_type='volume', 
                        threshold=None, opacity=0.3, cmap='viridis'):
@@ -503,7 +518,6 @@ def visualize_protection_regions_3d(plotter, affine, shape, mni_coordinates, avo
     print("=== 创建修正的保护区域可视化 ===")
     
     # 创建保护mask
-    from utils.add_noise_to_volumes import create_protection_mask  # 使用之前定义的函数
     protection_mask, centers = create_protection_mask(shape, affine, mni_coordinates, avoid_radius)
     
     # 创建一致的PyVista网格

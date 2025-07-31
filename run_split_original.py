@@ -1,5 +1,14 @@
-import utils.organize_files_by_batch as org_batch
-import utils.dir_utils as find_dir
+import os,sys
+# 快速路径设置
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # code/
+sys.path.insert(0, parent_dir)
+# 设置包名
+if __package__ is None:
+    __package__ = 'shoufaMRI'
+
+import shoufaMRI.data.file_organizer as org_batch
+import shoufaMRI.utils.directory_utils as find_dir
 
 
 def main1():

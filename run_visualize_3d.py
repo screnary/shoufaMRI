@@ -1,13 +1,27 @@
 """
 visualize the noised volumes, check the protection area mask
 """
-import os
-import utils.dir_utils as dir_utils
-import utils.add_noise_to_volumes as noise
-import utils.visualize as vis3d
+import os,sys
 import pyvista as pv
 import pdb
 
+# 快速路径设置
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # code/
+sys.path.insert(0, parent_dir)
+# 设置包名
+if __package__ is None:
+    # 根据文件位置动态设置包名
+    relative_path = os.path.relpath(current_dir, parent_dir)
+    __package__ = relative_path.replace(os.sep, '.')
+    print(f"设置包名: {__package__}")  # shoufaMRI
+try:
+    import shoufaMRI.utils.directory_utils as directory_utils
+    import shoufaMRI.core.volume_noise_operations as noise
+    import shoufaMRI.utils.visualize as vis3d
+except ImportError as e:
+    print(f"Import Error!!!:{e}")
+    sys.exit(1)
 
 if __name__ == "__main__":
 
@@ -135,10 +149,10 @@ if __name__ == "__main__":
 
     # original data
     nii_dir_2 = os.path.join(data_root, 'nii_data_2507_noised_new')
-    nii_fnames_2 = dir_utils.get_nii_files_with_pattern(nii_dir_2)
+    nii_fnames_2 = directory_utils.get_nii_files_with_pattern(nii_dir_2)
     # noised data
     nii_dir_3 = os.path.join(data_root, 'nii_data_2507')
-    nii_fnames_3 = dir_utils.get_nii_files_with_pattern(nii_dir_3)
+    nii_fnames_3 = directory_utils.get_nii_files_with_pattern(nii_dir_3)
 
     nii_fname = nii_fnames_2[0]
     nii_fname_noised = nii_fnames_3[0]

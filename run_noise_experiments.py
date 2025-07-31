@@ -3,11 +3,23 @@
 噪声参数实验脚本
 """
 
-import os
+import os,sys
 import argparse
 import numpy as np
-from utils.exp_frame_noise import NoiseExperimentRunner
-from utils.config_loader import (
+
+# 快速路径设置
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # code/
+sys.path.insert(0, parent_dir)
+
+if __package__ is None:
+    # 根据文件位置动态设置包名
+    relative_path = os.path.relpath(current_dir, parent_dir)
+    __package__ = relative_path.replace(os.sep, '.')
+    print(f"设置包名: {__package__}")
+
+from shoufaMRI.core.exp_frame_noise import NoiseExperimentRunner
+from shoufaMRI.utils.config_loader import (
     load_experiment_config, create_sample_configs, 
     ConfigLoader, print_coordinate_info
 )
@@ -104,10 +116,10 @@ def print_config_summary(config, coordinate_group: str):
     
     # 计算总任务数
     try:
-        from utils import dir_utils
+        from utils import directory_utils
         nii_dir = os.path.join(config.data_root, config.input_subdir)
         if os.path.exists(nii_dir):
-            nii_files = dir_utils.get_nii_files_with_pattern(nii_dir)
+            nii_files = directory_utils.get_nii_files_with_pattern(nii_dir)
             total_files = len(nii_files)
         else:
             total_files = "未知(目录不存在)"

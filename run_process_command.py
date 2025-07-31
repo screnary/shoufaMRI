@@ -3,9 +3,9 @@ import os
 
 
 LIST_CMD = [
-    "python getNewDicomData.py --data_phase Rest --surg_time Pre_Surgery > >(tee log_pre_rest.txt)",
-    "python getNewDicomData.py --data_phase Struc --surg_time Post_Surgery",
-    "python getNewDicomData.py --data_phase Struc --surg_time Pre_Surgery"
+    "python ./data/dicom_handler.py --data_phase Rest --surg_time Pre_Surgery > >(tee log_pre_rest.txt)",
+    "python ./data/dicom_handler.py --data_phase Struc --surg_time Post_Surgery",
+    "python ./data/dicom_handler.py --data_phase Struc --surg_time Pre_Surgery"
 ]
 
 # BASE_CMD = "python3 test_3d_transfer_fast_v2.py --class_offset {} --cuda_id {} --category {}\

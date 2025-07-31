@@ -1,7 +1,17 @@
-import os
+import os,sys
+# 快速路径设置
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # code/
+sys.path.insert(0, parent_dir)
+# 设置包名
+if __package__ is None:
+    # 根据文件位置动态设置包名
+    relative_path = os.path.relpath(current_dir, parent_dir)
+    __package__ = relative_path.replace(os.sep, '.')
+    print(f"设置包名: {__package__}")
 
-import utils.dir_utils as dir_utils
-import utils.add_noise_to_volumes as noise
+import shoufaMRI.utils.directory_utils as directory_utils
+import shoufaMRI.core.volume_noise_operations as noise
 import pdb
 
 mni_coords = [  # avoid DMN, SN, CEN nodes
@@ -127,8 +137,8 @@ def main_1():
     nii_dir = os.path.join(data_root, 'pre_surgery', 'RestTARWSDCF')
     nii_dir_2 = os.path.join(data_root, 'post_surgery', 'RestTARWSDCF')
     print(f"processing path {nii_dir}")
-    nii_fnames = dir_utils.get_nii_files_with_pattern(nii_dir)
-    nii_fnames_2 = dir_utils.get_nii_files_with_pattern(nii_dir_2)
+    nii_fnames = directory_utils.get_nii_files_with_pattern(nii_dir)
+    nii_fnames_2 = directory_utils.get_nii_files_with_pattern(nii_dir_2)
     nii_fnames.extend(nii_fnames_2)
     total_fcount = len(nii_fnames)
 
@@ -154,7 +164,7 @@ def main_2():
     data_root = "/mnt/c/Works/ws/shoufa2025/data"  # local data
     nii_dir = os.path.join(data_root, 'nii_data_2507')
     print(f"processing path {nii_dir}")
-    nii_fnames = dir_utils.get_nii_files_with_pattern(nii_dir)
+    nii_fnames = directory_utils.get_nii_files_with_pattern(nii_dir)
     total_fcount = len(nii_fnames)
 
     # 添加高斯噪声，避开指定坐标6mm半径
