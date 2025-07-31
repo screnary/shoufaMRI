@@ -1,4 +1,61 @@
 # shoufaMRI Env Setting
+
+## Project directories
+``` shell
+tree -L 2
+
+
+
+├── README.md
+├── __init__.py
+├── __pycache__
+│   ├── __init__.cpython-310.pyc
+│   ├── __init__.cpython-312.pyc
+│   └── preprocess_data.cpython-312.pyc
+├── config
+│   ├── config_20250730.yaml
+│   └── config_default.yaml
+├── core
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── exp_frame_noise.py
+│   └── volume_noise_operations.py
+├── data
+│   ├── __init__.py
+│   ├── dicom_handler.py
+│   ├── file_merger.py
+│   ├── file_organizer.py
+│   └── preprocess_data.py
+├── requirements.txt
+├── run_noise_experiments.py
+├── run_noise_processing_test.py
+├── run_process_command.py
+├── run_split_original.py
+├── run_visualize_3d.py
+└── utils
+    ├── __init__.py
+    ├── __pycache__
+    ├── config_loader.py
+    ├── directory_utils.py
+    └── visualize.py
+```
+
+## Requirements
+```shell
+pip freeze | grep -E "(numpy|matplotlib|scipy|opencv|pillow|pydicom|nibabel|scikit)" > requirements.txt
+
+matplotlib==3.10.1
+matplotlib-inline==0.1.7
+nibabel==5.3.2
+numpy==2.2.5
+opencv-python==4.11.0.86
+pillow==11.2.1
+pydicom==3.0.1
+scikit-image==0.25.2
+scipy==1.15.3
+```
+
+
 ## Visualization in Windows [miniconda]
 ### 1. 下载并安装Anaconda
 访问: https://www.anaconda.com/products/distribution
