@@ -12,6 +12,7 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 import jsonschema
 from jsonschema import validate, ValidationError
+import pdb
 
 # 检查是否作为包的一部分运行
 if __package__ is None:

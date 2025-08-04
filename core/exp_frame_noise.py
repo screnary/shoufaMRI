@@ -279,6 +279,9 @@ class NoiseExperimentRunner:
         nii_dir = os.path.join(self.config.data_root, self.config.input_subdir)
         nii_files_all = directory_utils.get_nii_files_with_pattern(nii_dir)
         
+        # print(self.config.max_subjects is not None)
+        # pdb.set_trace()
+
         if self.config.max_subjects is not None:
             nii_files = nii_files_all[:self.config.max_subjects]
             # import pdb

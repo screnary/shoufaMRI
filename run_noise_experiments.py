@@ -54,6 +54,7 @@ def main():
     
     # 列出坐标组
     if args.list_coordinates:
+        print(args)
         print_coordinate_info(args.config)
         return
     
