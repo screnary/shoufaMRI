@@ -113,6 +113,14 @@ sphere.plot(color='lightblue', show_edges=True)
 print('✓ Windows PyVista 工作正常!')
 ```
 
+# Experiment: 202509 [Band pass noise]
+1. 在 core/volume_noise_operations.py 中，进行带通噪声实验，验证添加噪声的频率是否符合要求。
+2. 修改 其中 add_noise_avoid_coordinates() 函数，让其可选进行带通噪声添加。
+3. 修改 exp_frame_noise.py 和 config，将带通噪声参数加进去，进而进行批量处理。[不需，直接在add_noise_avoid_coordinates使用了默认参数，默认使用带通滤波处理noise]
+4. 直接批量运行之前config即可（改data experiment名称）
+``` shell
+python run_noise_experiments.py -c "./config/config_20250911.yaml"
+```
 
 # Experiment: 202507 [Noise addition]
 
@@ -140,7 +148,7 @@ print('✓ Windows PyVista 工作正常!')
 - **高频噪声区**：0.08Hz以上（可以适量添加，主要是热噪声）
 
 **实施步骤**：
-1. **频率设计**：根据TR计算采样频率和奈奎斯特频率
+1. **频率设计**：根据TR计算采样频率和奈奎斯特频率 (TR=2.0s,重复率，即fMRI采集的周期)
 2. **滤波器构建**：设计带通或带阻滤波器限定噪声频段
 3. **白噪声生成**：先生成宽频带的白噪声
 4. **频域滤波**：对每个体素的时间序列应用频率滤波

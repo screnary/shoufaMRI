@@ -5,6 +5,7 @@ Add noise to nifti volumes, avoiding coordinates(MNI space)
 import nibabel as nib
 import numpy as np
 from scipy.ndimage import binary_dilation
+from scipy.signal import butter, filtfilt
 from pathlib import Path
 from tqdm import tqdm
 import pdb
@@ -131,7 +132,8 @@ def add_noise_avoid_coordinates(nifti_file, mni_coordinates,
                                noise_params=None,
                                volumes=None,
                                save_mask=False,
-                               use_brain_mask=False):
+                               use_brain_mask=False,
+                               use_band_filter=True):
     """
     给NIfTI数据添加噪声，但绕过指定的MNI坐标区域
     
@@ -201,6 +203,13 @@ def add_noise_avoid_coordinates(nifti_file, mni_coordinates,
             data, protection_mask, brain_mask, noise_type, noise_params
         )
     
+    # band limited noise [0.01~0.08Hz]
+    if use_band_filter:
+        noise = noisy_data - data
+        filtered_noise = band_limited_filtered_noise(noise)
+        noisy_data = data + filtered_noise
+
+
     # 保存结果
     if output_file:
         output_path = Path(output_file)
@@ -428,9 +437,51 @@ def add_noise_to_volume(volume, protection_mask, brain_mask=None, noise_type='ga
     return noisy_volume
 
 
+def band_limited_filtered_noise(noise, TR=2.0, low_freq=0.01, high_freq=0.08):
+    # nx, ny, nz, nt = noise.shape
+    fs = 1 / TR # 采样频率=1/重复时间 = 0.5Hz
+    nyquist = fs / 2 # 奈奎斯特频率=0.25Hz
+    low_norm = low_freq / nyquist
+    high_norm = high_freq / nyquist
+    
+    if high_norm >= 1.0:
+        # 上界无效，只使用高通滤波器，高于low_norm即通过
+        b, a = butter(4, low_norm, btype='high')
+    else:
+        # 使用 巴特沃斯带通滤波器
+        b, a = butter(4, [low_norm, high_norm], btype='band')
+    
+    # 对每个体素的时间序列进行滤波
+    filtered_noise = np.zeros_like(noise)
+    # for i in range(nx):
+    #     for j in range(ny):
+    #         for k in range(nz):
+    #             filtered_noise[i, j, k, :] = filtfilt(b, a, noise[i, j, k, :])
+    filtered_noise = filtfilt(b, a, noise, axis=3)
+    return filtered_noise
+
+
+def test_main():
+    input_nii_fpath = "/mnt/c/Works/ws/shoufa2025/data/nii_data_2507/pre_sub_0003F.nii"
+    output_nii_fpath = "/mnt/c/Works/ws/shoufa2025/data/nii_data_2507_noised/pre_sub_0003F.nii"
+    # 添加高斯噪声，避开指定坐标6mm半径
+    noisy_data, mask = add_noise_avoid_coordinates(
+        nifti_file=input_nii_fpath,
+        mni_coordinates=mni_coords,
+        output_file=output_nii_fpath,
+        avoid_radius=6,
+        noise_type='gaussian',
+        noise_params=None,  # {'mean': 0, 'std': 50},
+        save_mask=False  # if save protection mask
+    )
+
+    print(f"处理完成！噪声数据形状: {noisy_data.shape}")
+
+
 if __name__ == "__main__":
     input_nii_fpath = "/mnt/c/Works/ws/shoufa2025/data/nii_data_2507/pre_sub_0003F.nii"
     output_nii_fpath = "/mnt/c/Works/ws/shoufa2025/data/nii_data_2507_noised/pre_sub_0003F.nii"
+    output_nii_fpath_bandfilt = "/mnt/c/Works/ws/shoufa2025/data/nii_data_2507_noised/pre_sub_0003F_bandfilt.nii"
     # # 添加高斯噪声，避开指定坐标6mm半径
     # noisy_data, mask = add_noise_avoid_coordinates(
     #     nifti_file=input_nii_fpath,
@@ -443,3 +494,193 @@ if __name__ == "__main__":
     # )
 
     # print(f"处理完成！噪声数据形状: {noisy_data.shape}")
+
+    import matplotlib.pyplot as plt
+    from scipy import signal
+    from scipy.fft import fft, fftfreq
+    
+    def analyze_power_spectrum(data, TR=2.0):
+        """分析功率谱"""
+        from scipy import signal
+        import numpy as np
+        import warnings
+        
+        # 数据验证
+        if len(data.shape) != 4:
+            raise ValueError(f"需要4D fMRI数据,得到{len(data.shape)}D")
+        
+        nx, ny, nz, nt = data.shape
+        fs = 1/TR
+        
+        print(f"fMRI数据功率谱分析:")
+        print(f"  数据形状: {data.shape}")
+        print(f"  时间点数: {nt}")
+        print(f"  TR: {TR}s")
+        print(f"  采样频率: {fs:.4f} Hz")
+        
+        # 选择合适的nperseg，避免警告, Number of data Points PER SEGment
+        nperseg = min(64, nt//4) if nt > 16 else nt
+        
+        # 抑制scipy的警告
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", "nperseg.*greater than input length")
+            
+            # 正确使用axis=3分析时间维度
+            frequencies, psd = signal.welch(data, fs, axis=3, nperseg=nperseg)
+        
+        # 计算全脑平均功率谱
+        mean_psd = np.mean(psd, axis=(0, 1, 2))
+        
+        # 分析不同频带的能量
+        fmri_band = (frequencies >= 0.01) & (frequencies <= 0.08)
+        noise_band = frequencies > 0.08
+        
+        fmri_power = np.mean(mean_psd[fmri_band]) if np.any(fmri_band) else 0
+        noise_power = np.mean(mean_psd[noise_band]) if np.any(noise_band) else 0
+        
+        print(f"  频率分辨率: {frequencies[1]-frequencies[0]:.6f} Hz")
+        print(f"  频率范围: {frequencies[0]:.6f} - {frequencies[-1]:.6f} Hz")
+        print(f"  fMRI频带功率 (0.01-0.08Hz): {fmri_power:.6f}")
+        print(f"  噪声频带功率 (>0.08Hz): {noise_power:.6f}")
+        
+        if noise_power > 0:
+            snr = fmri_power / noise_power
+            print(f"  功率比 (信号/噪声): {snr:.3f}")
+        else:
+            snr = float('inf')
+            print(f"  功率比: 无穷大 (无噪声功率)")
+        
+        return {
+            'frequencies': frequencies,
+            'psd': psd,  # 完整的4D PSD
+            'mean_psd': mean_psd,  # 全脑平均PSD
+            'fmri_power': fmri_power,
+            'noise_power': noise_power,
+            'snr': snr
+        }
+
+    def generate_fmri_compatible_noise(shape, TR=2.0, noise_type='band_limited'):
+        """生成符合fMRI特性的噪声"""
+        
+        if len(shape) == 4:  # 4D fMRI数据
+            nx, ny, nz, nt = shape
+        else:
+            raise ValueError("需要4D数据 (x, y, z, time)")
+        
+        fs = 1/TR # 1/重复时间（秒） = 采样频率 = 0.5 Hz
+        
+        if noise_type == 'band_limited':
+            # 方法1：带限白噪声 (限制在fMRI频带内)
+            noise = generate_band_limited_noise(shape, fs, low_freq=0.01, high_freq=0.08)
+            
+        elif noise_type == 'pink_noise':
+            # 方法2：粉红噪声 (1/f噪声，更接近生理噪声)
+            noise = generate_pink_noise(shape, fs)
+            
+        elif noise_type == 'low_frequency':
+            # 方法4：低频噪声
+            noise = generate_low_frequency_noise(shape, fs, cutoff=0.08)
+            
+        else:
+            raise ValueError(f"不支持的噪声类型: {noise_type}")
+        
+        return noise
+
+    def generate_band_limited_noise(shape, fs, low_freq=0.01, high_freq=0.08):
+        """生成带限白噪声"""
+        from scipy.signal import butter, filtfilt
+        
+        nx, ny, nz, nt = shape
+        
+        # 生成白噪声
+        white_noise = np.random.randn(nx, ny, nz, nt) # standard normal distribution (mu=0,std=1)
+        # gen normal distribution with input params {mean,std}
+        
+        # 设计带通滤波器
+        nyquist = fs / 2  # 奈奎斯特频率 = 0.25 Hz
+        low_norm = low_freq / nyquist
+        high_norm = high_freq / nyquist
+        
+        if high_norm >= 1.0:
+            # 上界无效，只使用高通滤波器，高于low_norm的都通过
+            b, a = butter(4, low_norm, btype='high')
+        else:
+            # 使用 巴特沃斯带通滤波器
+            b, a = butter(4, [low_norm, high_norm], btype='band')
+        
+        # 对每个体素的时间序列进行滤波
+        filtered_noise = np.zeros_like(white_noise)
+        for i in range(nx):
+            for j in range(ny):
+                for k in range(nz):
+                    filtered_noise[i, j, k, :] = filtfilt(b, a, white_noise[i, j, k, :])
+        
+        return filtered_noise
+
+    def generate_pink_noise(shape, fs, alpha=1.0):
+        """生成粉红噪声 (1/f^alpha)"""
+        nx, ny, nz, nt = shape
+        
+        # 在频域生成粉红噪声
+        freqs = fftfreq(nt, 1/fs)
+        freqs[0] = 1e-10  # 避免除零
+        
+        # 1/f^alpha 功率谱
+        power_spectrum = 1 / (np.abs(freqs) ** alpha)
+        power_spectrum[0] = 0  # DC分量为0
+        
+        pink_noise = np.zeros((nx, ny, nz, nt))
+        
+        for i in range(nx):
+            for j in range(ny):
+                for k in range(nz):
+                    # 生成随机相位
+                    phases = np.random.uniform(0, 2*np.pi, nt)
+                    # 构造复数谱
+                    spectrum = np.sqrt(power_spectrum) * np.exp(1j * phases)
+                    # 逆傅里叶变换得到时域信号
+                    pink_noise[i, j, k, :] = np.real(np.fft.ifft(spectrum))
+        
+        return pink_noise
+
+    def generate_low_frequency_noise(shape, fs, cutoff=0.08):
+        """生成低频噪声"""
+        from scipy.signal import butter, filtfilt
+        
+        nx, ny, nz, nt = shape
+        
+        # 生成白噪声
+        white_noise = np.random.randn(nx, ny, nz, nt)
+        
+        # 低通滤波器
+        nyquist = fs / 2
+        normalized_cutoff = cutoff / nyquist
+        b, a = butter(4, normalized_cutoff, btype='low')
+        
+        # 滤波
+        filtered_noise = np.zeros_like(white_noise)
+        for i in range(nx):
+            for j in range(ny):
+                for k in range(nz):
+                    filtered_noise[i, j, k, :] = filtfilt(b, a, white_noise[i, j, k, :])
+        
+        return filtered_noise
+
+    # TODO: check new band_limited_noise() method, replace former gaussian noise
+    # 添加高斯噪声，避开指定坐标6mm半径
+    noisy_data, mask = add_noise_avoid_coordinates(
+        nifti_file=input_nii_fpath,
+        mni_coordinates=mni_coords,
+        output_file=output_nii_fpath_bandfilt,
+        avoid_radius=6,
+        noise_type='gaussian',
+        noise_params=None,  # {'mean': 0, 'std': 50},
+        save_mask=False,  # if save protection mask
+        use_brain_mask=False
+    )
+
+    # analyze signal power
+    img = nib.load(output_nii_fpath_bandfilt)  # input_nii_fpath   output_nii_fpath output_nii_fpath_bandfilt
+    data = img.get_fdata()
+    affine = img.affine
+    analyze_power_spectrum(data, TR=2.0)
