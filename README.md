@@ -119,7 +119,42 @@ print('✓ Windows PyVista 工作正常!')
 3. 修改 exp_frame_noise.py 和 config，将带通噪声参数加进去，进而进行批量处理。[不需，直接在add_noise_avoid_coordinates使用了默认参数，默认使用带通滤波处理noise]
 4. 直接批量运行之前config即可（改data experiment名称）
 ``` shell
-python run_noise_experiments.py -c "./config/config_20250911.yaml"
+python run_noise_experiments.py -n "[20250911] r=12 and std=[25,100]" -c "./config/config_20250911.yaml"
+```
+
+``` shell
+设置包名: shoufaMRI
+加载配置文件: ./config/config_20250911.yaml
+使用坐标组: whole
+开始实验...
+2025-09-11 21:07:43,324 - [20250911] r=12 and std=[25,100], pre - INFO - 实验配置已保存: /mnt/e/data/liuyang/original_202507/experiments/[20250911] r=12 and std=[25,100], pre/config.json
+2025-09-11 21:07:43,324 - [20250911] r=12 and std=[25,100], pre - INFO - 开始实验: [20250911] r=12 and std=[25,100], pre
+2025-09-11 21:07:43,781 - [20250911] r=12 and std=[25,100], pre - INFO - 共处理 64/64 个NIfTI文件
+2025-09-11 21:07:43,782 - [20250911] r=12 and std=[25,100], pre - INFO - 生成 2 个参数组合
+2025-09-11 21:07:43,782 - [20250911] r=12 and std=[25,100], pre - INFO - 总任务数: 128
+
+2025-09-11 21:08:01,716 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0083/sub_0083F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,716 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0083/sub_0083F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,717 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0084/sub_0084F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,717 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0084/sub_0084F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,718 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0085/sub_0085F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,718 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0085/sub_0085F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,718 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0086/sub_0086F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,719 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0086/sub_0086F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,719 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0114/sub_0114F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,719 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0114/sub_0114F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,720 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0115/sub_0115F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,720 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0115/sub_0115F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,721 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0116/sub_0116F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,721 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0116/sub_0116F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,722 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0117/sub_0117F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,723 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0117/sub_0117F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,723 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0118/sub_0118F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:01,723 - [20250911] r=12 and std=[25,100], pre - ERROR - 任务异常: /mnt/e/data/liuyang/original_202507/04_original_data_no_editing_processed/pre_surgery/RestTARWSDCF/sub_0118/sub_0118F.nii, A process in the process pool was terminated abruptly while the future was running or pending.
+2025-09-11 21:08:02,108 - [20250911] r=12 and std=[25,100], pre - INFO - 结果已保存: /mnt/e/data/liuyang/original_202507/experiments/[20250911] r=12 and std=[25,100], pre/results.csv, /mnt/e/data/liuyang/original_202507/experiments/[20250911] r=12 and std=[25,100], pre/results.json
+实验失败: division by zero
+
+# 原因，内存不够，导致pool内进程终止报错。改了worker=2即可
 ```
 
 # Experiment: 202507 [Noise addition]

@@ -205,9 +205,13 @@ def add_noise_avoid_coordinates(nifti_file, mni_coordinates,
     
     # band limited noise [0.01~0.08Hz]
     if use_band_filter:
+        safe_min = np.min(data)
+        safe_max = np.max(data)
         noise = noisy_data - data
         filtered_noise = band_limited_filtered_noise(noise)
+        # pdb.set_trace()
         noisy_data = data + filtered_noise
+        noisy_data = np.clip(noisy_data, safe_min, safe_max)
 
 
     # 保存结果

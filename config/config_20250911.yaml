@@ -144,7 +144,7 @@ processing:
   save_mask: false
   use_brain_mask: true
 execution:
-  max_workers: 4
+  max_workers: 2
   skip_existing: true
   save_intermediate: true
   max_subjects: 100
