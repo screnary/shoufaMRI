@@ -1,8 +1,7 @@
 """ Expand origin dicom data through random volume expantion,
     Output new dicom files
-    before: getNewDicomData.py
 """
-import os
+import os,sys
 import glob
 import numpy as np
 from collections import defaultdict
@@ -11,7 +10,6 @@ import matplotlib.pyplot as plt
 import pydicom
 from pydicom.dataset import Dataset, FileDataset
 from tqdm import tqdm
-import preprocess_data as pp
 from datetime import datetime
 import argparse
 import shutil
@@ -19,6 +17,19 @@ import re
 
 import nibabel as nib
 import pdb
+
+
+# 检查是否作为包的一部分运行
+if __package__ is None:
+    # 直接运行的情况，添加项目根目录到路径: (../../shoufaMRI)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    
+    # 设置包名
+    __package__ = 'data'
+
+from . import preprocess_data as pp
 
 
 proj_root = os.path.dirname(os.path.dirname(

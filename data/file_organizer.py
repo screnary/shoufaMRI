@@ -1,7 +1,3 @@
-"""
-before: organize_files_by_batch.py
-"""
-
 import os
 import shutil
 import re

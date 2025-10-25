@@ -1,3 +1,7 @@
+'''
+former version [2024]: preprocess volume data to train POD prediction network (Resnet backbone)
+'''
+
 import os
 import re
 import numpy as np
@@ -9,8 +13,8 @@ import argparse
 from tqdm import tqdm
 import pdb
 
-proj_root = os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))
+# proj_root = os.path.dirname(os.path.dirname(
+#     os.path.abspath(__file__)))
 data_root = os.path.join('/mnt/e/data/liuyang/', '2024shoufa')
 
 
