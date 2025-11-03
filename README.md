@@ -112,6 +112,16 @@ sphere = pv.Sphere()
 sphere.plot(color='lightblue', show_edges=True)
 print('✓ Windows PyVista 工作正常!')
 ```
+# Experiment: 202510 [Process original_202510]
+1. 处理目录，
+1) 从中取出：E:\data\liuyang\original_202510\for_original\Rest_pre\sub_0001，中的bcNGS前缀的.nii文件，存到一个新目录“for_original_bcNGS”
+2) 从中取出：E:\data\liuyang\original_202510\for_original\Rest_pre\sub_0001，中的无前缀的20240416_072804LIUYANGFMRIs002a1001.nii文件,存到一个新目录“for_original_noprocess”
+2. 按照 Experiment 202509 [Band pass noise] 配置进行带通滤波加噪
+1) 更新 protected mask 的 anchor MNI coordinates
+2) 运行 run_noise_experiments.py，存到目录“for_original_bcNGS_bandpass_noised”
+3. 将原始.nii间隔采样
+1) 运行 dicom_handler.py 中的 split_nifti_by_odd_even_volumes(), 存到目录“for_original_noprocess_interval_sampled”
+
 
 # Experiment: 202509 [Band pass noise]
 1. 在 core/volume_noise_operations.py 中，进行带通噪声实验，验证添加噪声的频率是否符合要求。

@@ -202,7 +202,9 @@ def organize_files_by_batch(directory, out_directory, batch_size=40, mode='parit
         organize_files_by_batch_parity(directory, out_directory, batch_size)
     elif mode == 'half':
         organize_files_by_batch_half(directory, out_directory, batch_size)
-    
+
+
+# 20251103: copy files to new directory
 
 if __name__ == "__main__":
     """ USAGE
