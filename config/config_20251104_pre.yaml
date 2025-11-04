@@ -1,0 +1,86 @@
+experiment:
+  name: '1104-forOriginal-Bandfilt Noise [0.01~0.08Hz]'
+  description: 在原始数据添加噪声
+  author: researcher
+  version: '1.0'
+data:
+  root: /mnt/e/data/liuyang/original_202510
+  input_subdir: for_original_bcNGS/Rest_pre
+  output_base_subdir: for_original_bcNGS_bandpass_noised/Rest_pre
+mni_coordinates:
+- name: whole
+  description: 避开SN, CEN, DMN网络节点的完整坐标集
+  coordinates:
+  - [-47.16, -8.48, 13.95]
+  - [52.65, -6.25, 14.63]
+  - [-4.80, 49.17, 30.89]
+  - [9.10, 50.84, 30.22]
+  - [-35.13, 6.65, 3.44]
+  - [39.02, 6.25, 2.08]
+  - [-4.04, 35.40, 13.95]
+  - [8.46, 37.01, 15.84]
+  - [-4.85, -42.92, 24.67]
+  - [7.44, -41.81, 21.87]
+  - [-18.45, 34.81, 42.20]
+  - [21.90, 31.12, 43.82]
+  - [-23.45, -59.56, 58.96]
+  - [26.11, -59.18, 62.06]
+  - [-42.80, -45.82, 46.74]
+  - [46.46, -46.29, 49.54]
+  - [-4.80, 49.17, 30.89]
+  - [9.10, 50.84, 30.22]
+  - [-4.85, -42.92, 24.67]
+  - [7.44, -41.81, 21.87]
+  - [-42.80, -45.82, 46.74]
+  - [46.46, -46.29, 49.54]
+  - [-44.14, -60.82, 35.59]
+  - [45.51, -59.98, 38.63]
+  - [-7.24, -56.07, 48.01]
+  - [9.98, -56.05, 43.77]
+  - [-39.88, 15.14, -20.18]
+  - [48.25, 14.75, -16.86]
+parameters:
+  avoid_radius:
+    values:
+    - 12
+    description: 保护区域半径，单位毫米
+  noise_params:
+  - name: low_noise
+    params:
+      mean: 0
+      std: 25
+    description: 低强度高斯噪声
+  - name: high_noise
+    params:
+      mean: 0
+      std: 100
+    description: 高强度高斯噪声
+processing:
+  noise_type: gaussian
+  save_mask: false
+  use_brain_mask: true
+execution:
+  max_workers: 4
+  skip_existing: true
+  save_intermediate: true
+  max_subjects: 100
+output:
+  save_config: true
+  save_csv: true
+  save_json: true
+  generate_report: true
+logging:
+  level: INFO
+  console_output: true
+  file_output: true
+advanced:
+  memory_limit_gb: 16
+  max_retries: 3
+  retry_delay: 5
+  monitor_memory: true
+  monitor_cpu: true
+  backup_original: false
+extensions:
+  custom_validators: []
+  post_processors: []
+  plugins: []

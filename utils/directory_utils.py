@@ -12,7 +12,7 @@ import shutil
 import pdb
 
 
-def get_nii_files_with_pattern(directory, pattern="*.nii*", recursive=True):
+def get_nii_files_with_pattern(directory, pattern="*.nii*", recursive=True, returnPath=False):
     """
     获取目录下所有.nii文件的完整路径
     
@@ -24,6 +24,8 @@ def get_nii_files_with_pattern(directory, pattern="*.nii*", recursive=True):
         文件匹配模式，支持 .nii, .nii.gz 等
     recursive : bool, default=True
         是否递归搜索子目录
+    returnPath: bool, dafault=False
+        是否返回 pathlib 格式的路径 PosixPath('/mnt/e/data/liuyang/original_202510/for_original_bcNGS/Rest_pre/sub_0001/bcNGSdswran20240416_072804LIUYANGFMRIs002a1001.nii')
     
     Returns:
     --------
@@ -60,13 +62,13 @@ def get_nii_files_with_pattern(directory, pattern="*.nii*", recursive=True):
         # 只搜索直接子目录
         matched_files = list(directory.glob(pattern))
     
-    # 转换为字符串路径并排序
-    matched_files = sorted([str(f) for f in matched_files])
     # 只保留.nii或.nii.gz文件
     matched_files = [f for f in matched_files 
                      if f.suffix in ['.nii', '.gz'] and str(f).endswith(('.nii', '.nii.gz'))]
-    
-    return matched_files
+    if not returnPath:
+        # 转换为字符串路径并排序
+        matched_files = sorted([str(f) for f in matched_files])
+    return sorted(matched_files)
 
 
 def extract_subject_number(path):
@@ -225,7 +227,8 @@ def copy_files_with_pattern_from_subdirs(source_dir, target_dir, pattern="bcNGS*
         matched_files = get_nii_files_with_pattern(
             sub_dir, 
             pattern, 
-            recursive=recursive_search
+            recursive=recursive_search,
+            returnPath=True
         )
         
         if not matched_files:
@@ -319,13 +322,13 @@ def main_copy_files():
         epilog="""
 示例:
   # 复制bcNGS前缀的文件
-  python directory_utils.py --copy source_dir target_dir --pattern "bcNGS*.nii*"
+  python directory_utils.py source_dir target_dir --pattern "bcNGS*.nii*"
   
   # 复制数字开头的文件
-  python directory_utils.py --copy source_dir target_dir --pattern "[0-9]*.nii*"
+  python directory_utils.py source_dir target_dir --pattern "[0-9]*.nii*"
   
   # 复制2024开头的文件并递归搜索
-  python directory_utils.py --copy source_dir target_dir --pattern "2024*.nii*" --recursive
+  python directory_utils.py source_dir target_dir --pattern "2024*.nii*" --recursive
         """
     )
     parser.add_argument('source_dir', help='源目录路径（包含sub_*子目录）')
@@ -376,4 +379,4 @@ def main_test_find_dirs():
 
 if __name__ == "__main__":
     # matching_dirs = main_test_find_dirs()
-    main_copy_files()  # python directory_utils.py --copy source_dir target_dir --pattern "bcNGS*.nii*"
+    main_copy_files()  # python directory_utils.py source_dir target_dir --pattern "bcNGS*.nii*"

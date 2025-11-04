@@ -32,7 +32,7 @@ def main():
     """主函数"""
     
     parser = argparse.ArgumentParser(description="噪声参数实验脚本")
-    parser.add_argument("--config", "-c", default="./config/config_20250730.yaml", 
+    parser.add_argument("--config", "-c", default="./config/config_20251104_pre.yaml", 
                        help="配置文件路径 (默认: ./config/config_20250730.yaml)")
     parser.add_argument("--create-config", action="store_true",
                        help="创建示例配置文件")
@@ -40,7 +40,7 @@ def main():
                        help="使用的坐标组名称 (默认: whole)")
     parser.add_argument("--list-coordinates", action="store_true",
                        help="列出配置文件中的所有坐标组")
-    parser.add_argument("--experiment-name", "-n", default="[20250630] change noise params and mask radius",
+    parser.add_argument("--experiment-name", "-n", default="[20251103] for original data",
                        help="实验名称 (覆盖配置文件中的设置)")
     parser.add_argument("--dry-run", action="store_true",
                        help="仅显示配置信息，不执行实验")
