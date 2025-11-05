@@ -129,7 +129,7 @@ python directory_utils.py /mnt/e/data/liuyang/original_202510/for_original/Rest_
 
 2. 按照 Experiment 202509 [Band pass noise] 配置进行带通滤波加噪
 - [x] (1) 更新 protected mask 的 anchor MNI coordinates
-- [ ] (2) 运行 run_noise_experiments.py，存到目录“for_original_bcNGS_bandpass_noised”
+- [x] (2) 运行 run_noise_experiments.py，存到目录“for_original_bcNGS_bandpass_noised”
 ``` shell
 python run_noise_experiments.py -n "[20251104] r=12 and std=[25,100]" -c "./config/config_20251104_pre.yaml"
 
@@ -137,8 +137,14 @@ python run_noise_experiments.py -n "[20251104] r=12 and std=[25,100]" -c "./conf
 ```
 
 
-3. 将原始.nii间隔采样
-- [ ] (1) 运行 dicom_handler.py 中的 split_nifti_by_odd_even_volumes(), 存到目录“for_original_noprocess_interval_sampled”
+3. 将原始.nii间隔采样、对半采样
+- [ ] (1) 运行 dicom_handler.py 中的 split_nifti_by_odd_even_volumes(), 存到目录“for_original_noprocess_interval”
+- [ ] (2) 运行 dicom_handler.py 中的 split_ori_to_two_files(), 存到目录“for_original_noprocess_half”
+``` shell
+cd data
+python dicom_handler.py
+# using main_process_nifti_202511() function
+```
 
 
 # Experiment: 202509 [Band pass noise]

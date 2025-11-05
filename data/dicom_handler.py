@@ -312,7 +312,9 @@ def split_nifti_by_odd_even_volumes(input_nifti_path, output_dir, slices_per_vol
     # 打印基本信息
     print(f"图像维度: {data.shape}")  # (64,64,40,300)
     print(f"数据类型: {data.dtype}")  # float64
-    
+    if data.shape[2] != slices_per_volume:
+        print(f"WARNING! slices_per_volume not common {data.shape[2]}")
+
     # 计算 volume 总数
     total_volumes = data.shape[3]
     print(f"总 volume 数: {total_volumes} (每个 volume 包含 {slices_per_volume} 个 slice)")
@@ -348,7 +350,7 @@ def split_nifti_by_odd_even_volumes(input_nifti_path, output_dir, slices_per_vol
         volume_data = data[:, :, :, start_vol:end_vol]
         
         # 根据 volume 的奇偶性，将其放入相应的数组
-        if (vol_idx+1) % 2 == 0:  # 奇数 volume (从0开始计数，0为第一个volume，是偶数)
+        if (vol_idx+1) % 2 == 0:  # 奇数 volume (从0开始计数，0为第一个volume，通过+1，是奇数)
             odd_start = odd_idx
             odd_end = odd_start + 1
             odd_data[:, :, :, odd_start:odd_end] = volume_data
@@ -381,7 +383,7 @@ def split_nifti_by_odd_even_volumes(input_nifti_path, output_dir, slices_per_vol
     print(f"  数据形状: {even_data.shape}")
 
 
-if __name__ == '__main__':
+def main_process_nifti_202507():
     # 20250707 process nifti file directly
     # 将 NIfTI 文件按照 volume 的奇偶性分割
     def extract_subject_number(path):
@@ -457,3 +459,127 @@ if __name__ == '__main__':
         tar_dir = tar_dir_list[i]
         input_nii_file = glob.glob(os.path.join(src_dir, "*.nii"))[0]
         split_nifti_by_odd_even_volumes(input_nifti_path=input_nii_file, output_dir=tar_dir, slices_per_volume=40)
+
+
+def split_ori_to_two_files(input_nifti_path, output_dir):
+    """ from subject path get .nii file, save to a dict 
+    input:
+        fpath: str, subject_0001's path (dir)
+        
+    """
+    ratio = 2  # ratio: int, split into 2 files, each has length N=num_subs/ratio
+    # 创建输出目录
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # 加载 NIfTI 文件
+    print(f"正在加载 {input_nifti_path}...")
+    nifti_img = nib.load(input_nifti_path)
+
+    data = nifti_img.get_fdata()
+    header = nifti_img.header
+    affine = nifti_img.affine
+
+    st = 0
+    step = data.shape[3]//ratio # time dim, split to two parts
+    data_1 = data[:,:,:,:st+step] #TODO: wrap this with for block
+    data_2 = data[:,:,:,st+step:]
+    img_1 = create_nifti(data_1, affine=affine, header=header)
+    img_2 = create_nifti(data_2, affine=affine, header=header)
+
+    updates = {'dim': np.array([4,64,64,40,header['dim'][4]//ratio,1,1,1],dtype='int16')}
+    update_header_info(img_1, updates)
+    update_header_info(img_2, updates)
+
+    # save new nii files
+    output_path_1 = os.path.join(output_dir, os.path.basename(input_nifti_path).replace('.nii', '_1st_half.nii'))
+    output_path_2 = os.path.join(output_dir, os.path.basename(input_nifti_path).replace('.nii', '_2nd_half.nii'))
+
+    nib.save(img_1, output_path_1)
+    nib.save(img_2, output_path_2)
+    print(f"处理完成: {output_path_1, output_path_2}")
+
+
+def main_process_nifti_202511(mode='interval'):
+    # 20251105 process nifti file directly, process for_original folder
+    # mode == 'interval', 将 NIfTI 文件按照 volume 的奇偶性分割
+    # mode == 'half', 将 NIFTI 文件按照前后划分为2个
+    def extract_subject_number(path):
+        """
+        从路径中提取sub_XXXX格式的数字部分
+        例如从'/mnt/f/CFH_Original_Data/sub_0053_1040368_wu_yong_liang/...'提取出53
+        
+        Args:
+            path: 包含子目录的路径
+        
+        Returns:
+            int: 提取的数字，如果没有找到则返回float('inf')作为排序的默认值
+        """
+        # 使用正则表达式查找sub_后跟随的数字部分
+        match = re.search(r'sub_(\d+)_', path)
+        if match:
+            # 将提取的数字字符串转换为整数
+            return int(match.group(1))
+        else:
+            # 如果没有找到匹配，返回无穷大以便排在最后
+            return float('inf')
+
+    def find_qualifying_directories(root_dir):
+        """
+        遍历指定目录，找出符合以下条件的子目录：
+        1. 为最末级子目录（不包含子目录）
+        
+        Args:
+            root_dir: 根目录路径
+        
+        Returns:
+            list: 符合条件的目录绝对路径列表
+        """
+        qualifying_dirs = []
+        
+        # 计数器用于显示进度
+        total_dirs = 0
+        processed_dirs = 0
+        
+        # 首先统计总目录数以便显示进度
+        print("计算总目录数...")
+        for _, dirnames, _ in os.walk(root_dir):
+            total_dirs += len(dirnames)
+        
+        print(f"开始处理，总共 {total_dirs} 个目录...")
+        
+        # 遍历所有目录
+        for dirpath, dirnames, filenames in os.walk(root_dir):
+            processed_dirs += 1
+
+            # 每处理100个目录显示一次进度
+            if processed_dirs % 100 == 0:
+                progress = (processed_dirs / total_dirs) * 100
+                print(f"进度: {progress:.2f}% ({processed_dirs}/{total_dirs})")
+            
+            # 检查1: 是否为最末级子目录（不包含其他子目录）
+            if dirnames:  # 如果dirnames不为空，说明有子目录
+                continue
+
+            qualifying_dirs.append(os.path.abspath(dirpath))
+
+        return sorted(qualifying_dirs, key=extract_subject_number)
+    
+    src_dir_list = find_qualifying_directories(root_dir='/mnt/e/data/liuyang/original_202510/for_original_noprocess')
+    tar_dir_list = [path.replace('for_original_noprocess', f'for_original_noprocess_{mode}') for path in src_dir_list]
+
+    print("start processing {root_dir}\n mode:{mode}")
+    for i,src_dir in enumerate(src_dir_list):
+        tar_dir = tar_dir_list[i]
+        input_nii_file = glob.glob(os.path.join(src_dir, "*.nii"))[0]
+        if mode == 'interval':
+            split_nifti_by_odd_even_volumes(input_nifti_path=input_nii_file, output_dir=tar_dir, slices_per_volume=40)
+        elif mode == 'half':
+            split_ori_to_two_files(input_nifti_path=input_nii_file, output_dir=tar_dir)
+        else:
+            raise NotImplementedError
+
+
+if __name__ == '__main__':
+    main_process_nifti_202511(mode='interval')
+    main_process_nifti_202511(mode='half')
