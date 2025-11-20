@@ -23,6 +23,7 @@ tree -L 2
 ├── data
 │   ├── __init__.py
 │   ├── dicom_handler.py
+│   ├── extract_matrix.py
 │   ├── file_merger.py
 │   ├── file_organizer.py
 │   └── preprocess_data.py
@@ -53,6 +54,8 @@ pillow==11.2.1
 pydicom==3.0.1
 scikit-image==0.25.2
 scipy==1.15.3
+openpyxl
+pandas
 ```
 
 
@@ -112,6 +115,42 @@ sphere = pv.Sphere()
 sphere.plot(color='lightblue', show_edges=True)
 print('✓ Windows PyVista 工作正常!')
 ```
+
+# Add function: 202511
+## 添加 data/extract_matrix.py
+1. 读取并解析 excel 的特定 sheet，提取其中标黄/高亮位置的矩阵坐标
+2. 根据矩阵坐标，从zsub_0xxx.txt中提取对应位置的子矩阵，存储为新矩阵
+3. 将子矩阵按照 subnect 的 CAM 分类存到各自的目录
+
+## 添加 data/copy_to_category_folder.py
+Step 1. - 提取CAM分类：
+
+从Excel的"剔除无MRI"sheet中读取数据
+按"CAM评分术后"列分类
+提取每个类别对应的"MRI排序"列表
+Step 2. - 拷贝文件：
+
+根据CAM分类结果
+在源目录中查找匹配的zsub_****_submatrix.txt文件
+按类别拷贝到对应的文件夹
+类别名称映射：
+
+默认映射：正常→normal, 谵妄→delirium, 不全对→incomplete, 待数据→pending_data
+可以自定义映射
+文件匹配逻辑：
+
+支持zsub_0001_submatrix.txt和sub_0001_submatrix.txt格式
+大小写不敏感匹配
+自动处理前缀z
+
+category_name_mapping = {
+        '正常': 'normal',
+        '谵妄': 'delirium',
+        '不全对': 'incomplete',
+        '待数据': 'pending_data',
+        '患者出院就算正常吧哈哈哈哈': 'normal'
+    }
+
 # Experiment: 202510 [Process original_202510]
 1. 处理目录，
 - [x] (1) 从中取出：E:\data\liuyang\original_202510\for_original\Rest_pre\sub_0001，中的bcNGS前缀的.nii文件，存到一个新目录“for_original_bcNGS”
