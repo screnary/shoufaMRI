@@ -220,8 +220,8 @@ def main_process(excel_file, sheet_name, source_dir, output_base_dir,
     return cam_categories, copy_stats
 
 
-# 使用示例
-if __name__ == "__main__":
+def main_copy_to_category(network_name='submatrix_CEN',
+                          phase='pre'):
     # 配置参数
     data_dir = "/mnt/c/Works/ws/shoufa2025/data/matrix"
     
@@ -230,10 +230,10 @@ if __name__ == "__main__":
     sheet_name = "剔除无MRI"
     
     # 源文件目录（包含submatrix文件）
-    source_dir = os.path.join(data_dir, "processed/post")
+    source_dir = os.path.join(data_dir, network_name, f"processed/{phase}")
     
     # 输出基础目录
-    output_base_dir = os.path.join(data_dir, "processed_classified_by_cam/post")
+    output_base_dir = os.path.join(data_dir, network_name, f"processed_classified_by_cam/{phase}")
     
     # 类别名称映射（中文到英文）
     category_name_mapping = {
@@ -272,3 +272,27 @@ if __name__ == "__main__":
         print(f"程序执行出错: {str(e)}")
         import traceback
         traceback.print_exc()
+
+
+# 使用示例
+if __name__ == "__main__":
+    main_copy_to_category(network_name='submatrix_CEN', phase='pre')
+    main_copy_to_category(network_name='submatrix_CEN', phase='post')
+
+    main_copy_to_category(network_name='submatrix_DAN', phase='pre')
+    main_copy_to_category(network_name='submatrix_DAN', phase='post')
+
+    main_copy_to_category(network_name='submatrix_DMN', phase='pre')
+    main_copy_to_category(network_name='submatrix_DMN', phase='post')
+
+    main_copy_to_category(network_name='submatrix_FPN', phase='pre')
+    main_copy_to_category(network_name='submatrix_FPN', phase='post')
+
+    main_copy_to_category(network_name='submatrix_SMN', phase='pre')
+    main_copy_to_category(network_name='submatrix_SMN', phase='post')
+
+    main_copy_to_category(network_name='submatrix_VAN', phase='pre')
+    main_copy_to_category(network_name='submatrix_VAN', phase='post')
+
+    main_copy_to_category(network_name='submatrix_VN', phase='pre')
+    main_copy_to_category(network_name='submatrix_VN', phase='post')

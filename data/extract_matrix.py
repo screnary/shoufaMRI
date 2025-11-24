@@ -336,7 +336,7 @@ def main_test(excel_file, sheet_name, txt_file, output_file, txt_delimiter=None)
     # print("  5. *_matrix_indexed.txt - 带索引的紧凑矩阵")
     print("=" * 60)
 
-def extract_matrix_from_folder(matrix_dir, output_dir, coordinates):
+def extract_matrix_from_folder(matrix_dir, output_dir, coordinates, txt_delimiter=None):
     # 创建输出目录（如果不存在）
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -405,10 +405,13 @@ def extract_matrix_from_folder(matrix_dir, output_dir, coordinates):
 
 
 # 使用示例
-def main_process_submatrix_extraction():
+def main_process_submatrix_extraction(excel_fn='Excel_Original_Data_rest_no_editing_pre_surgery.xlsx', 
+                                      network_name='submatrix_extraction_Excel_Original_Data',
+                                      phase='pre'):
     # 配置参数
     data_dir = "/mnt/c/Works/ws/shoufa2025/data/matrix"
-    excel_file = os.path.join(data_dir, "Excel_Original_Data_rest_no_editing_pre_surgery.xlsx")  # 子图高亮Excel文件路径
+    # excel_file = os.path.join(data_dir, "Excel_Original_Data_rest_no_editing_pre_surgery.xlsx")  # 子图高亮Excel文件路径
+    excel_file = os.path.join(data_dir, excel_fn)
     sheet_name = "sub_0001"    # Sheet名称
 
     # txt分隔符：None(空白字符), '\t'(制表符), ','(逗号), ' '(空格)等
@@ -427,15 +430,59 @@ def main_process_submatrix_extraction():
     print("Step 1.5: 批量处理所有txt文件")
     print("=" * 60)
 
-    matrix_dir = os.path.join(data_dir, "post_surgery_original_GretnaSFCMatrixZ")
-    output_dir = os.path.join(data_dir, "processed", "post")
+    matrix_dir = os.path.join(data_dir, f"{phase}_surgery_original_GretnaSFCMatrixZ")
+    output_dir = os.path.join(data_dir, f"{network_name}", "processed", f"{phase}")
 
     extract_matrix_from_folder(matrix_dir, output_dir, coordinates)
 
 
 if __name__ == "__main__":
     # run submatrix extraction, from folders
-    main_process_submatrix_extraction()
+    # 1.test
+    # main_process_submatrix_extraction()  # test for Excel_Original_Data_rest_no_editing_pre_surgery
+    
+    # 2.CEN
+    # main_process_submatrix_extraction(excel_fn='CEN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_CEN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='CEN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_CEN', phase='post')
+    
+    # 3.DAN
+    main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_DAN', phase='pre')
+    main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_DAN', phase='post')
+    
+    # 4.DMN
+    main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_DMN', phase='pre')
+    main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_DMN', phase='post')
+    
+    # 5.FPN
+    main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_FPN', phase='pre')
+    main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_FPN', phase='post')
+    
+    # 6.SMN
+    main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_SMN', phase='pre')
+    main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_SMN', phase='post')
+    
+    # 7.VAN
+    main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_VAN', phase='pre')
+    main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_VAN', phase='post')
+    
+    # 8.VN
+    main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_VN', phase='pre')
+    main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name='submatrix_VN', phase='post')
 
     # run category arrangement, by 首发入组MRI对照表, sheet=剔除无MRI, key=CAM评分术后, subname=MRI排序
+    # run ./copy_to_category_folder.py
     
