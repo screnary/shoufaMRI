@@ -142,12 +142,12 @@ def copy_files_by_cam_category(source_dir, output_base_dir, cam_categories,
             if mri_order_clean in source_files:
                 source_filename = source_files[mri_order_clean]
             else:
-                # 尝试其他可能的格式
+                # 尝试其他可能的格式, 兼容处理如"zsub_0001_01"等变体
                 for key in source_files.keys():
-                    if mri_order_clean in key or key in mri_order_clean:
+                    if mri_order_clean in key or key in mri_order_clean:  # 'sub_0001' in 'sub_0001_01'
                         source_filename = source_files[key]
                         break
-            
+
             if source_filename:
                 # 找到文件，执行拷贝
                 source_path = os.path.join(source_dir, source_filename)
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     # main_copy_to_category(network_name='submatrix_LN', phase='pre')
     # main_copy_to_category(network_name='submatrix_LN', phase='post')
 
-    ############### Noised data submatrix extraction
+    ############## Noised data submatrix extraction
     network_name_list = [
         # 'CEN',
         # 'DAN',
