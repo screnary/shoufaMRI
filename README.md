@@ -116,6 +116,18 @@ sphere.plot(color='lightblue', show_edges=True)
 print('✓ Windows PyVista 工作正常!')
 ```
 
+# 添加噪声后数据的子网络提取: 202512
+## DAN、DMN 错误提取修正
+1. run extract_matrix.py
+2. run copy_to_category_folder.py
+存储在  C:\Works\ws\shoufa2025\data\matrix\原始数据_子网提取\matrix_DAN_DMN_修正.rar 中了
+
+## 添加噪声后数据的子网络提取
+1. noised_matrix_data中，3类数据增强子文件夹，定位到最内层目录，可能还要处理文件名的模式变化“zsub_0001_01.txt”
+1） sub标识添加响应处理
+2） 目录遍历，以及输出目录【可以不做这块，把中间目录略掉】
+
+
 # Add function: 202511
 ## 添加 data/extract_matrix.py
 1. 读取并解析 excel 的特定 sheet，提取其中标黄/高亮位置的矩阵坐标

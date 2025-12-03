@@ -221,7 +221,10 @@ def main_process(excel_file, sheet_name, source_dir, output_base_dir,
 
 
 def main_copy_to_category(network_name='submatrix_CEN',
-                          phase='pre'):
+                          phase='pre', data_flag='origin'):
+    """
+    params: data_flag, 是处理原始数据"origin"，还是加噪后的数据"noised"
+    """
     # 配置参数
     data_dir = "/mnt/c/Works/ws/shoufa2025/data/matrix"
     
@@ -229,12 +232,17 @@ def main_copy_to_category(network_name='submatrix_CEN',
     excel_file = os.path.join(data_dir, "首发入组MRI对照表.xlsx")
     sheet_name = "剔除无MRI"
     
-    # 源文件目录（包含submatrix文件）
-    source_dir = os.path.join(data_dir, network_name, f"processed/{phase}")
-    
-    # 输出基础目录
-    output_base_dir = os.path.join(data_dir, network_name, f"processed_classified_by_cam/{phase}")
-    
+    if data_flag=='origin':
+        # 源文件目录（包含submatrix文件）
+        source_dir = os.path.join(data_dir, 'origin_matrix_data', network_name, f"processed/{phase}")
+        # 输出基础目录
+        output_base_dir = os.path.join(data_dir, 'origin_matrix_data', network_name, f"processed_classified_by_cam/{phase}")
+    elif data_flag=='noised':
+        source_dir = os.path.join(data_dir, 'noised_matrix_data', network_name, f"processed/{phase}")
+        output_base_dir = os.path.join(data_dir, 'noised_matrix_data', network_name, f"processed_classified_by_cam/{phase}")
+    else:
+        raise NotImplementedError
+
     # 类别名称映射（中文到英文）
     category_name_mapping = {
         '正常': 'normal',
@@ -276,23 +284,56 @@ def main_copy_to_category(network_name='submatrix_CEN',
 
 # 使用示例
 if __name__ == "__main__":
-    main_copy_to_category(network_name='submatrix_CEN', phase='pre')
-    main_copy_to_category(network_name='submatrix_CEN', phase='post')
+    # main_copy_to_category(network_name='submatrix_CEN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_CEN', phase='post')
 
-    main_copy_to_category(network_name='submatrix_DAN', phase='pre')
-    main_copy_to_category(network_name='submatrix_DAN', phase='post')
+    # main_copy_to_category(network_name='submatrix_DAN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_DAN', phase='post')
 
-    main_copy_to_category(network_name='submatrix_DMN', phase='pre')
-    main_copy_to_category(network_name='submatrix_DMN', phase='post')
+    # main_copy_to_category(network_name='submatrix_DMN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_DMN', phase='post')
 
-    main_copy_to_category(network_name='submatrix_FPN', phase='pre')
-    main_copy_to_category(network_name='submatrix_FPN', phase='post')
+    # main_copy_to_category(network_name='submatrix_FPN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_FPN', phase='post')
 
-    main_copy_to_category(network_name='submatrix_SMN', phase='pre')
-    main_copy_to_category(network_name='submatrix_SMN', phase='post')
+    # main_copy_to_category(network_name='submatrix_SMN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_SMN', phase='post')
 
-    main_copy_to_category(network_name='submatrix_VAN', phase='pre')
-    main_copy_to_category(network_name='submatrix_VAN', phase='post')
+    # main_copy_to_category(network_name='submatrix_VAN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_VAN', phase='post')
 
-    main_copy_to_category(network_name='submatrix_VN', phase='pre')
-    main_copy_to_category(network_name='submatrix_VN', phase='post')
+    # main_copy_to_category(network_name='submatrix_VN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_VN', phase='post')
+
+    # main_copy_to_category(network_name='submatrix_LN', phase='pre')
+    # main_copy_to_category(network_name='submatrix_LN', phase='post')
+
+    ############### Noised data submatrix extraction
+    network_name_list = [
+        # 'CEN',
+        # 'DAN',
+        # 'DMN',
+        # 'FPN',
+        # 'SMN',
+        # 'VAN',
+        # 'VN',
+        'LN'
+        ]
+    
+    for nw in network_name_list:
+        print(f"****Process network {nw}****")
+        nw_name = f'submatrix_{nw}'
+        main_copy_to_category(network_name=nw_name, phase='01_Volume_Dividing/post_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='01_Volume_Dividing/post_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='01_Volume_Dividing/pre_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='01_Volume_Dividing/pre_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+
+        main_copy_to_category(network_name=nw_name, phase='02_Interval_Sampling/post_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='02_Interval_Sampling/post_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='02_Interval_Sampling/pre_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='02_Interval_Sampling/pre_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
+
+        main_copy_to_category(network_name=nw_name, phase='03_Noise_Addition/Rest_post_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='03_Noise_Addition/Rest_post_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
+        main_copy_to_category(network_name=nw_name, phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')

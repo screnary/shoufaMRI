@@ -407,12 +407,25 @@ def extract_matrix_from_folder(matrix_dir, output_dir, coordinates, txt_delimite
 # 使用示例
 def main_process_submatrix_extraction(excel_fn='Excel_Original_Data_rest_no_editing_pre_surgery.xlsx', 
                                       network_name='submatrix_extraction_Excel_Original_Data',
-                                      phase='pre'):
+                                      phase='pre',
+                                      data_flag='origin'):
+    """
+    params: data_flag, 是处理原始数据"origin"，还是加噪后的数据"noised"
+    """
     # 配置参数
     data_dir = "/mnt/c/Works/ws/shoufa2025/data/matrix"
     # excel_file = os.path.join(data_dir, "Excel_Original_Data_rest_no_editing_pre_surgery.xlsx")  # 子图高亮Excel文件路径
     excel_file = os.path.join(data_dir, excel_fn)
     sheet_name = "sub_0001"    # Sheet名称
+
+    if data_flag=='origin':
+        matrix_dir = os.path.join(data_dir, 'origin_matrix_data', f"{phase}_surgery_original_GretnaSFCMatrixZ")
+        output_dir = os.path.join(data_dir, 'origin_matrix_data', f"{network_name}", "processed", f"{phase}")
+    elif data_flag=='noised':
+        matrix_dir = os.path.join(data_dir, 'noised_matrix_data', f"{phase}") # 此处 phase 应为叶子结点目录
+        output_dir = os.path.join(data_dir, 'noised_matrix_data', f"{network_name}", "processed", f"{phase}")
+    else:
+        raise NotImplementedError
 
     # txt分隔符：None(空白字符), '\t'(制表符), ','(逗号), ' '(空格)等
     txt_delimiter = None
@@ -430,9 +443,6 @@ def main_process_submatrix_extraction(excel_fn='Excel_Original_Data_rest_no_edit
     print("Step 1.5: 批量处理所有txt文件")
     print("=" * 60)
 
-    matrix_dir = os.path.join(data_dir, f"{phase}_surgery_original_GretnaSFCMatrixZ")
-    output_dir = os.path.join(data_dir, f"{network_name}", "processed", f"{phase}")
-
     extract_matrix_from_folder(matrix_dir, output_dir, coordinates)
 
 
@@ -441,48 +451,94 @@ if __name__ == "__main__":
     # 1.test
     # main_process_submatrix_extraction()  # test for Excel_Original_Data_rest_no_editing_pre_surgery
     
-    # 2.CEN
+    # # 2.CEN
     # main_process_submatrix_extraction(excel_fn='CEN_original_pre_surgery_sub_0001.xlsx', 
     #                                   network_name='submatrix_CEN', phase='pre')
     # main_process_submatrix_extraction(excel_fn='CEN_original_pre_surgery_sub_0001.xlsx', 
     #                                   network_name='submatrix_CEN', phase='post')
     
-    # 3.DAN
-    main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_DAN', phase='pre')
-    main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_DAN', phase='post')
+    # # 3.DAN
+    # main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_DAN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_DAN', phase='post')
     
-    # 4.DMN
-    main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_DMN', phase='pre')
-    main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_DMN', phase='post')
+    # # 4.DMN
+    # main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_DMN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_DMN', phase='post')
     
-    # 5.FPN
-    main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_FPN', phase='pre')
-    main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_FPN', phase='post')
+    # # 5.FPN
+    # main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_FPN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_FPN', phase='post')
     
-    # 6.SMN
-    main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_SMN', phase='pre')
-    main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_SMN', phase='post')
+    # # 6.SMN
+    # main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_SMN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_SMN', phase='post')
     
-    # 7.VAN
-    main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_VAN', phase='pre')
-    main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_VAN', phase='post')
+    # # 7.VAN
+    # main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_VAN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_VAN', phase='post')
     
-    # 8.VN
-    main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_VN', phase='pre')
-    main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name='submatrix_VN', phase='post')
+    # # 8.VN
+    # main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_VN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_VN', phase='post')
+
+    # # 8.LN
+    # main_process_submatrix_extraction(excel_fn='LN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_LN', phase='pre')
+    # main_process_submatrix_extraction(excel_fn='LN_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name='submatrix_LN', phase='post')
 
     # run category arrangement, by 首发入组MRI对照表, sheet=剔除无MRI, key=CAM评分术后, subname=MRI排序
     # run ./copy_to_category_folder.py
+
+    ############### Noised data submatrix extraction
+    network_name_list = [
+        # 'CEN',
+        # 'DAN',
+        # 'DMN',
+        # 'FPN',
+        # 'SMN',
+        # 'VAN',
+        # 'VN',
+        'LN'
+        ]
     
+    for nw in network_name_list:
+        print(f"****Process network {nw}****")
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                      network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+        
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
+        
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
+        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
