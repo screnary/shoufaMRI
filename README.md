@@ -121,29 +121,40 @@ sphere.plot(color='lightblue', show_edges=True)
 print('✓ Windows PyVista 工作正常!')
 ```
 
-# 为了BuildingML进行批量matrix提取: 202601
-文件目录：C:\Works\ws\shoufa2025\data\202512_BuidingML
-从全脑的文件夹里 ，每一个$区域网络$从这个全脑的里面提取即可，然后生成对应文件夹，例如：02_MoCA_unchanged/zsub_0004.txt
-## 数据目录放在：
-C:\Works\ws\shoufa2025\data\matrix\arrnaged_Whole_Brain
+## 修改记录 (Changelog)
+
+### [2026-01] BuildingML批量矩阵提取
+
+**功能**: 为BuildingML进行批量matrix提取
+
+- **数据目录**: `C:\Works\ws\shoufa2025\data\202512_BuidingML`
+- **输出目录**: `C:\Works\ws\shoufa2025\data\matrix\arrnaged_Whole_Brain`
+- **功能描述**: 从全脑文件夹中提取每个区域网络的子矩阵，生成对应文件夹（例如：`02_MoCA_unchanged/zsub_0004.txt`）
+
+**使用方法**:
 ```shell
 cd /mnt/c/Works/ws/shoufa2025/code/shoufaMRI/data
 python extract_matrix.py
 ```
 
-# 添加噪声后数据的子网络提取: 202512
-## DAN、DMN 错误提取修正
-1. run extract_matrix.py
-2. run copy_to_category_folder.py
-存储在  C:\Works\ws\shoufa2025\data\matrix\原始数据_子网提取\matrix_DAN_DMN_修正.rar 中了
+---
 
-## 添加噪声后数据的子网络提取
+### [2025-12] 添加噪声后数据的子网络提取
+
+**修复**: DAN、DMN错误提取修正
+- 运行 `extract_matrix.py` 进行矩阵提取
+- 运行 `copy_to_category_folder.py` 进行分类拷贝
+- **数据存储**: `C:\Works\ws\shoufa2025\data\matrix\原始数据_子网提取\matrix_DAN_DMN_修正.rar`
+
+**功能改进**: 添加噪声后数据的子网络提取
 1. noised_matrix_data中，3类数据增强子文件夹，定位到最内层目录，可能还要处理文件名的模式变化“zsub_0001_01.txt”
 1） sub标识添加响应处理
 2） 目录遍历，以及输出目录【可以不做这块，把中间目录略掉】
 
 
-# Add function: 202511
+---
+
+### [2025-11] 新增功能模块
 ## 添加 data/extract_matrix.py
 1. 读取并解析 excel 的特定 sheet，提取其中标黄/高亮位置的矩阵坐标
 2. 根据矩阵坐标，从zsub_0xxx.txt中提取对应位置的子矩阵，存储为新矩阵
@@ -178,7 +189,11 @@ category_name_mapping = {
         '患者出院就算正常吧哈哈哈哈': 'normal'
     }
 
-# Experiment: 202510 [Process original_202510]
+---
+
+### [2025-10] 原始数据处理实验
+
+**实验**: Process original_202510
 1. 处理目录，
 - [x] (1) 从中取出：E:\data\liuyang\original_202510\for_original\Rest_pre\sub_0001，中的bcNGS前缀的.nii文件，存到一个新目录“for_original_bcNGS”
 ```shell
@@ -213,7 +228,11 @@ python dicom_handler.py
 ```
 
 
-# Experiment: 202509 [Band pass noise]
+---
+
+### [2025-09] 带通噪声实验
+
+**实验**: Band pass noise
 1. 在 core/volume_noise_operations.py 中，进行带通噪声实验，验证添加噪声的频率是否符合要求。
 2. 修改 其中 add_noise_avoid_coordinates() 函数，让其可选进行带通噪声添加。
 3. 修改 exp_frame_noise.py 和 config，将带通噪声参数加进去，进而进行批量处理。[不需，直接在add_noise_avoid_coordinates使用了默认参数，默认使用带通滤波处理noise]
@@ -257,7 +276,11 @@ python run_noise_experiments.py -n "[20250911] r=12 and std=[25,100]" -c "./conf
 # 原因，内存不够，导致pool内进程终止报错。改了worker=2即可
 ```
 
-# Experiment: 202507 [Noise addition]
+---
+
+### [2025-07] 噪声添加实验
+
+**实验**: Noise addition
 
 ## fMRI数据噪声添加与SNR控制方法概要
 
