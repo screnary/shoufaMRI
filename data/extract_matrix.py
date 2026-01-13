@@ -424,6 +424,9 @@ def main_process_submatrix_extraction(excel_fn='Excel_Original_Data_rest_no_edit
     elif data_flag=='noised':
         matrix_dir = os.path.join(data_dir, 'noised_matrix_data', f"{phase}") # 此处 phase 应为叶子结点目录
         output_dir = os.path.join(data_dir, 'noised_matrix_data', f"{network_name}", "processed", f"{phase}")
+    elif data_flag=='arrnaged_Whole_Brain':
+        matrix_dir = os.path.join(data_dir, 'arrnaged_Whole_Brain', f"{phase}") # 此处 phase 应为叶子结点目录, i.e. 01_pre_surgery/01_MoCA_down/post_surgery_01/GretnaSFCMatrixZ
+        output_dir = os.path.join(data_dir, 'arrnaged_Whole_Brain', f"{network_name}", "processed", f"{phase}")
     else:
         raise NotImplementedError
 
@@ -503,42 +506,75 @@ if __name__ == "__main__":
     # run ./copy_to_category_folder.py
 
     ############### Noised data submatrix extraction
+    # network_name_list = [
+    #     # 'CEN',
+    #     # 'DAN',
+    #     # 'DMN',
+    #     # 'FPN',
+    #     # 'SMN',
+    #     # 'VAN',
+    #     # 'VN',
+    #     'LN'
+    #     ]
+    
+    # for nw in network_name_list:
+    #     print(f"****Process network {nw}****")
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                   network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+        
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
+        
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
+    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
+        
+
+    ############### arranged_Whole_Brain data submatrix extraction
     network_name_list = [
-        # 'CEN',
-        # 'DAN',
-        # 'DMN',
-        # 'FPN',
-        # 'SMN',
-        # 'VAN',
-        # 'VN',
+        'CEN',
+        'DAN',
+        'DMN',
+        'FPN',
+        'SMN',
+        'VAN',
+        'VN',
         'LN'
         ]
     
     for nw in network_name_list:
         print(f"****Process network {nw}****")
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+                                      network_name=f'submatrix_{nw}', phase='01_pre_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+                                        network_name=f'submatrix_{nw}', phase='01_pre_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
+                                        network_name=f'submatrix_{nw}', phase='01_pre_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
+                                        network_name=f'submatrix_{nw}', phase='01_pre_surgery/04_MoCA_down_unchanaged', data_flag='arrnaged_Whole_Brain')
         
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+                                      network_name=f'submatrix_{nw}', phase='02_post_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
+                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
+                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
-        
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
+                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/04_MoCA_down_unchanaged', data_flag='arrnaged_Whole_Brain')

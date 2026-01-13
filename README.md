@@ -1,5 +1,10 @@
 # shoufaMRI Env Setting
 
+## Install Project
+```shell
+git clone git@github.com:screnary/shoufaMRI.git
+```
+
 ## Project directories
 ``` shell
 tree -L 2
@@ -114,6 +119,16 @@ import numpy as np
 sphere = pv.Sphere()
 sphere.plot(color='lightblue', show_edges=True)
 print('✓ Windows PyVista 工作正常!')
+```
+
+# 为了BuildingML进行批量matrix提取: 202601
+文件目录：C:\Works\ws\shoufa2025\data\202512_BuidingML
+从全脑的文件夹里 ，每一个$区域网络$从这个全脑的里面提取即可，然后生成对应文件夹，例如：02_MoCA_unchanged/zsub_0004.txt
+## 数据目录放在：
+C:\Works\ws\shoufa2025\data\matrix\arrnaged_Whole_Brain
+```shell
+cd /mnt/c/Works/ws/shoufa2025/code/shoufaMRI/data
+python extract_matrix.py
 ```
 
 # 添加噪声后数据的子网络提取: 202512
