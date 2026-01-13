@@ -561,20 +561,20 @@ if __name__ == "__main__":
     
     for nw in network_name_list:
         print(f"****Process network {nw}****")
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name=f'submatrix_{nw}', phase='01_pre_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='01_pre_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='01_pre_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='01_pre_surgery/04_MoCA_down_unchanaged', data_flag='arrnaged_Whole_Brain')
+        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+        #                               network_name=f'submatrix_{nw}', phase='01_pre_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
+        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+        #                                 network_name=f'submatrix_{nw}', phase='01_pre_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
+        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+        #                                 network_name=f'submatrix_{nw}', phase='01_pre_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
+        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+        #                                 network_name=f'submatrix_{nw}', phase='01_pre_surgery/04_MoCA_down_unchanaged', data_flag='arrnaged_Whole_Brain')
         
+        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+        #                               network_name=f'submatrix_{nw}', phase='02_post_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
+        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+        #                                 network_name=f'submatrix_{nw}', phase='02_post_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
+        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
+        #                                 network_name=f'submatrix_{nw}', phase='02_post_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
         main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                      network_name=f'submatrix_{nw}', phase='02_post_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/04_MoCA_down_unchanaged', data_flag='arrnaged_Whole_Brain')
+                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/04_MoCA_down_unchanged', data_flag='arrnaged_Whole_Brain')
