@@ -4,6 +4,9 @@ import pandas as pd
 import numpy as np
 import glob
 import os
+import argparse
+
+DEFAULT_NETWORKS = ("CEN", "DAN", "DMN", "FPN", "SMN", "VAN", "VN", "LN")
 
 def extract_highlighted_coordinates(file_path, sheet_name):
     """
@@ -449,132 +452,111 @@ def main_process_submatrix_extraction(excel_fn='Excel_Original_Data_rest_no_edit
     extract_matrix_from_folder(matrix_dir, output_dir, coordinates)
 
 
-if __name__ == "__main__":
-    # run submatrix extraction, from folders
-    # 1.test
-    # main_process_submatrix_extraction()  # test for Excel_Original_Data_rest_no_editing_pre_surgery
-    
-    # # 2.CEN
-    # main_process_submatrix_extraction(excel_fn='CEN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_CEN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='CEN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_CEN', phase='post')
-    
-    # # 3.DAN
-    # main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_DAN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='DAN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_DAN', phase='post')
-    
-    # # 4.DMN
-    # main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_DMN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='DMN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_DMN', phase='post')
-    
-    # # 5.FPN
-    # main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_FPN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='FPN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_FPN', phase='post')
-    
-    # # 6.SMN
-    # main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_SMN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='SMN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_SMN', phase='post')
-    
-    # # 7.VAN
-    # main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_VAN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='VAN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_VAN', phase='post')
-    
-    # # 8.VN
-    # main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_VN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='VN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_VN', phase='post')
+def _parse_networks(value: str) -> list[str]:
+    # 允许 "CEN,DAN" 或 "CEN DAN"
+    parts = [p.strip() for p in value.replace(",", " ").split()]
+    return [p for p in parts if p]
 
-    # # 8.LN
-    # main_process_submatrix_extraction(excel_fn='LN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_LN', phase='pre')
-    # main_process_submatrix_extraction(excel_fn='LN_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name='submatrix_LN', phase='post')
 
-    # run category arrangement, by 首发入组MRI对照表, sheet=剔除无MRI, key=CAM评分术后, subname=MRI排序
-    # run ./copy_to_category_folder.py
+def run_batch_submatrix_extraction(
+    networks: list[str],
+    phases: list[str],
+    data_flag: str,
+    excel_template: str = "{nw}_original_pre_surgery_sub_0001.xlsx",
+    network_name_template: str = "submatrix_{nw}",
+):
+    """
+    将原先 main 里重复的循环/硬编码参数抽出来，便于复用。
 
-    ############### Noised data submatrix extraction
-    # network_name_list = [
-    #     # 'CEN',
-    #     # 'DAN',
-    #     # 'DMN',
-    #     # 'FPN',
-    #     # 'SMN',
-    #     # 'VAN',
-    #     # 'VN',
-    #     'LN'
-    #     ]
-    
-    # for nw in network_name_list:
-    #     print(f"****Process network {nw}****")
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                   network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/post_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_01/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='01_Volume_Dividing/pre_surgery_02/GretnaSFCMatrixZ', data_flag='noised')
-        
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/post_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_even/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='02_Interval_Sampling/pre_surgery_01_odd/GretnaSFCMatrixZ', data_flag='noised')
-        
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_post_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std25/GretnaSFCMatrixZ', data_flag='noised')
-    #     main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-    #                                     network_name=f'submatrix_{nw}', phase='03_Noise_Addition/Rest_pre_r12.0_mean0_std100/GretnaSFCMatrixZ', data_flag='noised')
-        
+    - networks: 例如 ["CEN", "DAN"]
+    - phases:
+        - data_flag == "origin": 通常为 ["pre", "post"]
+        - data_flag in {"noised","arrnaged_Whole_Brain"}: 传叶子目录相对路径列表
+    """
+    if not networks:
+        networks = list(DEFAULT_NETWORKS)
+    if not phases:
+        raise ValueError("phases 不能为空：请通过 --phase 指定一个或多个 phase")
 
-    ############### arranged_Whole_Brain data submatrix extraction
-    network_name_list = [
-        'CEN',
-        'DAN',
-        'DMN',
-        'FPN',
-        'SMN',
-        'VAN',
-        'VN',
-        'LN'
-        ]
-    
-    for nw in network_name_list:
+    for nw in networks:
         print(f"****Process network {nw}****")
-        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-        #                               network_name=f'submatrix_{nw}', phase='01_pre_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
-        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-        #                                 network_name=f'submatrix_{nw}', phase='01_pre_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
-        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-        #                                 network_name=f'submatrix_{nw}', phase='01_pre_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
-        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-        #                                 network_name=f'submatrix_{nw}', phase='01_pre_surgery/04_MoCA_down_unchanaged', data_flag='arrnaged_Whole_Brain')
-        
-        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-        #                               network_name=f'submatrix_{nw}', phase='02_post_surgery/01_MoCA_down', data_flag='arrnaged_Whole_Brain')
-        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-        #                                 network_name=f'submatrix_{nw}', phase='02_post_surgery/02_MoCA_unchanged', data_flag='arrnaged_Whole_Brain')
-        # main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-        #                                 network_name=f'submatrix_{nw}', phase='02_post_surgery/03_MoCA_up', data_flag='arrnaged_Whole_Brain')
-        main_process_submatrix_extraction(excel_fn=f'{nw}_original_pre_surgery_sub_0001.xlsx', 
-                                        network_name=f'submatrix_{nw}', phase='02_post_surgery/04_MoCA_down_unchanged', data_flag='arrnaged_Whole_Brain')
+        excel_fn = excel_template.format(nw=nw)
+        network_name = network_name_template.format(nw=nw)
+        for ph in phases:
+            main_process_submatrix_extraction(
+                excel_fn=excel_fn,
+                network_name=network_name,
+                phase=ph,
+                data_flag=data_flag,
+            )
+
+
+def build_argparser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        description="批量提取子矩阵（由Excel高亮坐标定义）",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    p.add_argument(
+        "--data-flag",
+        choices=["origin", "noised", "arrnaged_Whole_Brain"],
+        default="arrnaged_Whole_Brain",
+        help="数据来源类型",
+    )
+    p.add_argument(
+        "--networks",
+        type=_parse_networks,
+        default=list(DEFAULT_NETWORKS),
+        help="网络列表：如 'CEN,DAN,DMN' 或 'CEN DAN DMN'",
+    )
+    p.add_argument(
+        "--phase",
+        action="append",
+        dest="phases",
+        default=[],
+        help=(
+            "可重复指定。origin通常用 pre/post；"
+            "noised/arrnaged_Whole_Brain 为叶子目录相对路径（如 '02_post_surgery/04_MoCA_down_unchanged'）"
+        ),
+    )
+    p.add_argument(
+        "--excel-template",
+        default="{nw}_original_pre_surgery_sub_0001.xlsx",
+        help="Excel文件名模板，可用 {nw} 占位符",
+    )
+    p.add_argument(
+        "--network-name-template",
+        default="submatrix_{nw}",
+        help="输出网络目录名模板，可用 {nw} 占位符",
+    )
+    return p
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_argparser().parse_args(argv)
+    run_batch_submatrix_extraction(
+        networks=args.networks,
+        phases=args.phases,
+        data_flag=args.data_flag,
+        excel_template=args.excel_template,
+        network_name_template=args.network_name_template,
+    )
+    return 0
+
+
+"""
+USAGE:
+python extract_matrix.py \
+  --data-flag arrnaged_Whole_Brain \
+  --networks "CEN,DAN,DMN,FPN,SMN,VAN,VN,LN" \
+  --phase "02_post_surgery/04_MoCA_down_unchanged"
+
+
+python extract_matrix.py \
+  --data-flag origin \
+  --networks "DMN" \
+  --phase pre \
+  --phase post
+"""
+
+if __name__ == "__main__":
+    raise SystemExit(main())
