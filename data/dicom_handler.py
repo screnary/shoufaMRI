@@ -432,7 +432,7 @@ def main_process_nifti_202507():
         print(f"开始处理，总共 {total_dirs} 个目录...")
         
         # 遍历所有目录
-        for dirpath, dirnames, filenames in os.walk(root_dir):
+        for dirpath, dirnames, _ in os.walk(root_dir):
             processed_dirs += 1
 
             # 每处理100个目录显示一次进度
@@ -500,86 +500,114 @@ def split_ori_to_two_files(input_nifti_path, output_dir):
     print(f"处理完成: {output_path_1, output_path_2}")
 
 
-def main_process_nifti_202511(mode='interval'):
-    # 20251105 process nifti file directly, process for_original folder
-    # mode == 'interval', 将 NIfTI 文件按照 volume 的奇偶性分割
-    # mode == 'half', 将 NIFTI 文件按照前后划分为2个
+def main_process_nifti_generic(
+    src_root,
+    dst_root=None,
+    mode="interval",
+    src_tag="for_original_noprocess",
+    dst_tag=None,
+    file_pattern="*.nii",
+    slices_per_volume=40,
+    verbose=True
+):
+    """
+    Generic NIfTI processing function.
+    Args:
+        src_root: str, source root directory.
+        dst_root: str or None, target root directory. If None, will generate by replacing src_tag with dst_tag.
+        mode: str, "interval" or "half".
+        src_tag: str, tag in path to replace.
+        dst_tag: str or None, new tag to replace src_tag with in output. Defaults to f"{src_tag}_{mode}".
+        file_pattern: str, pattern of nifti files to look up in each subject dir.
+        slices_per_volume: int, param for 'interval' mode.
+        verbose: bool, print progress.
+    """
     def extract_subject_number(path):
-        """
-        从路径中提取sub_XXXX格式的数字部分
-        例如从'/mnt/f/CFH_Original_Data/sub_0053_1040368_wu_yong_liang/...'提取出53
-        
-        Args:
-            path: 包含子目录的路径
-        
-        Returns:
-            int: 提取的数字，如果没有找到则返回float('inf')作为排序的默认值
-        """
-        # 使用正则表达式查找sub_后跟随的数字部分
-        match = re.search(r'sub_(\d+)_', path)
+        # 提取sub_XXXX数字，适合多种名称风格
+        match = re.search(r'sub(?:ject)?[_\-]?0*([0-9]+)', path, re.I)
         if match:
-            # 将提取的数字字符串转换为整数
             return int(match.group(1))
-        else:
-            # 如果没有找到匹配，返回无穷大以便排在最后
-            return float('inf')
+        return float("inf")
 
-    def find_qualifying_directories(root_dir):
-        """
-        遍历指定目录，找出符合以下条件的子目录：
-        1. 为最末级子目录（不包含子目录）
-        
-        Args:
-            root_dir: 根目录路径
-        
-        Returns:
-            list: 符合条件的目录绝对路径列表
-        """
+    def find_leaf_dirs(root_dir):
         qualifying_dirs = []
-        
-        # 计数器用于显示进度
         total_dirs = 0
         processed_dirs = 0
-        
-        # 首先统计总目录数以便显示进度
-        print("计算总目录数...")
+        # count directories
         for _, dirnames, _ in os.walk(root_dir):
             total_dirs += len(dirnames)
-        
-        print(f"开始处理，总共 {total_dirs} 个目录...")
-        
-        # 遍历所有目录
-        for dirpath, dirnames, filenames in os.walk(root_dir):
+        if verbose:
+            print(f"Scanning {root_dir} ({total_dirs} folders)...")
+        for dirpath, dirnames, _ in os.walk(root_dir):
             processed_dirs += 1
-
-            # 每处理100个目录显示一次进度
-            if processed_dirs % 100 == 0:
-                progress = (processed_dirs / total_dirs) * 100
-                print(f"进度: {progress:.2f}% ({processed_dirs}/{total_dirs})")
-            
-            # 检查1: 是否为最末级子目录（不包含其他子目录）
-            if dirnames:  # 如果dirnames不为空，说明有子目录
-                continue
-
-            qualifying_dirs.append(os.path.abspath(dirpath))
-
+            if processed_dirs % 100 == 0 and total_dirs:
+                if verbose:
+                    progress = (processed_dirs / total_dirs) * 100
+                    print(f"Progress: {progress:.2f}% ({processed_dirs}/{total_dirs})")
+            if not dirnames:  # Is leaf
+                qualifying_dirs.append(os.path.abspath(dirpath))
         return sorted(qualifying_dirs, key=extract_subject_number)
-    
-    src_dir_list = find_qualifying_directories(root_dir='/mnt/e/data/liuyang/original_202510/for_original_noprocess')
-    tar_dir_list = [path.replace('for_original_noprocess', f'for_original_noprocess_{mode}') for path in src_dir_list]
 
-    print("start processing {root_dir}\n mode:{mode}")
-    for i,src_dir in enumerate(src_dir_list):
-        tar_dir = tar_dir_list[i]
-        input_nii_file = glob.glob(os.path.join(src_dir, "*.nii"))[0]
+    if dst_tag is None:
+        dst_tag = f"{src_tag}_{mode}"
+    src_dirs = find_leaf_dirs(src_root)
+    if dst_root is None:
+        dst_dirs = [p.replace(src_tag, dst_tag) for p in src_dirs]
+    else:
+        rels = [os.path.relpath(p, src_root) for p in src_dirs]
+        dst_dirs = [os.path.join(dst_root, rel) for rel in rels]
+
+    if verbose:
+        print(f"==== Start processing NIfTI files ====")
+        print(f"  Mode: {mode}")
+        print(f"  Subjects: {len(src_dirs)}")
+        print(f"  From: {src_root}")
+        print(f"  To: {dst_root if dst_root else '[auto] - e.g. ' + dst_dirs[0]}")
+        print("============================")
+
+    for src_dir, dst_dir in zip(src_dirs, dst_dirs):
+        nii_list = glob.glob(os.path.join(src_dir, file_pattern))
+        if len(nii_list) == 0:
+            print(f"WARNING: No NIfTI found in {src_dir}")
+            continue
+        input_nii_file = nii_list[0]
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        if verbose:
+            print(f"Processing: {input_nii_file} -> {dst_dir}")
         if mode == 'interval':
-            split_nifti_by_odd_even_volumes(input_nifti_path=input_nii_file, output_dir=tar_dir, slices_per_volume=40)
+            split_nifti_by_odd_even_volumes(
+                input_nifti_path=input_nii_file, 
+                output_dir=dst_dir, 
+                slices_per_volume=slices_per_volume
+            )
         elif mode == 'half':
-            split_ori_to_two_files(input_nifti_path=input_nii_file, output_dir=tar_dir)
+            split_ori_to_two_files(
+                input_nifti_path=input_nii_file,
+                output_dir=dst_dir
+            )
         else:
-            raise NotImplementedError
-
+            raise NotImplementedError(f"Unknown mode {mode}")
 
 if __name__ == '__main__':
-    main_process_nifti_202511(mode='interval')
-    main_process_nifti_202511(mode='half')
+    # # Experiment 202510
+    # main_process_nifti_generic(
+    #     src_root='/mnt/e/data/liuyang/original_202510/for_original_noprocess',
+    #     mode='interval'
+    # )
+    # main_process_nifti_generic(
+    #     src_root='/mnt/e/data/liuyang/original_202510/for_original_noprocess',
+    #     mode='half'
+    # )
+
+    # # Experiment 202602
+    main_process_nifti_generic(
+        src_root='/mnt/c/Works/ws/shoufa2025/data/202602_forEditing/for_editing',
+        src_tag='for_editing',
+        mode='interval'
+    )
+    main_process_nifti_generic(
+        src_root='/mnt/c/Works/ws/shoufa2025/data/202602_forEditing/for_editing',
+        src_tag='for_editing',
+        mode='half'
+    )

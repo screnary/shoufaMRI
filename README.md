@@ -122,6 +122,29 @@ print('✓ Windows PyVista 工作正常!')
 ```
 
 ## 修改记录 (Changelog)
+### [2026-02] 批量数据处理：
+**功能**：Volume divide、interval divide
+- **数据目录**: `C:\Works\ws\shoufa2025\data\202602_forEditing`
+- **使用方法**
+``` shell
+cd data
+python dicom_handler.py
+# using main_process_nifti_202511() function
+```
+(1) 运行 dicom_handler.py 中的 main_process_nifti_generic(mode='interval'), 存到目录“*_interval”
+(2) 运行 dicom_handler.py 中的 main_process_nifti_generic(mode='half'), 存到目录“*_half”
+
+**功能**：add noise 进行带通滤波加噪，设置多组噪声参数; 在 original 未经divide扩增的基础上添加noise，divide组不加noise
+./for_editing 文件夹中，是本次给的数据，已经过了 4*4卷积核的平滑预处理，非原始数据，所以仅做了加噪实验。待后续更新了原始数据（original）再行divide处理。
+- **数据目录**：
+- **使用方法**：
+``` shell
+python run_noise_experiments.py -n "[20260210] r=[3, 12] and std=[25,100]" -c "./config/config_20260210_pre.yaml"
+
+python run_noise_experiments.py -n "[20260210] r=[3, 12] and std=[25,100]" -c "./config/config_20260210_post.yaml"
+```
+(1) 更新 protected mask 的 anchor MNI coordinates
+(2) 运行 run_noise_experiments.py，存到目录“*_bandpass_noised”
 
 ### [2026-01] BuildingML批量矩阵提取
 
