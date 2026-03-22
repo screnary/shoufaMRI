@@ -88,7 +88,7 @@ class ExperimentResult:
 class NoiseExperimentRunner:
     """噪声参数实验运行器"""
     
-    def __init__(self, config: ExperimentConfig, experiment_name: str = None):
+    def __init__(self, config: ExperimentConfig, experiment_name: Optional[str ] = None):
         self.config = config
         self.experiment_name = experiment_name or f"noise_exp_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         

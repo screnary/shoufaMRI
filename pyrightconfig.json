@@ -1,0 +1,9 @@
+{
+  "verboseOutput": true,
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": ["../"]
+    }
+  ]
+}
