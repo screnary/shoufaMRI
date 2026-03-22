@@ -127,7 +127,7 @@ mni_coords = [  # avoid DMN, SN, CEN nodes
 
 def add_noise_avoid_coordinates(nifti_file, mni_coordinates, 
                                output_file=None, 
-                               avoid_radius=5, 
+                               avoid_radius=5.0, 
                                noise_type='gaussian',
                                noise_params=None,
                                volumes=None,
